@@ -24,7 +24,8 @@ endif ()
 corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
     CRATES vortex-ffi
     FEATURES duckdb
-    IMPORTED_CRATES vortex_ffi
+    CRATE_TYPES staticlib
+    FLAGS --crate-type=staticlib
 )
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
@@ -43,11 +44,6 @@ build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES} ${PROTO_SRCS})
 build_loadable_extension(${TARGET_NAME} ${EXTENSION_SOURCES} ${PROTO_SRCS})
 
 target_link_libraries(${EXTENSION_NAME}
-    vortex_ffi-static
-    protobuf::libprotobuf
-    ${SECURITY_FRAMEWORK}
-)
-target_link_libraries(${LOADABLE_EXTENSION_NAME}
     vortex_ffi-static
     protobuf::libprotobuf
     ${SECURITY_FRAMEWORK}
