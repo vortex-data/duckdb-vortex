@@ -48,7 +48,7 @@ target_link_libraries(${EXTENSION_NAME}
     ${SECURITY_FRAMEWORK}
 )
 target_link_libraries(${LOADABLE_EXTENSION_NAME}
-    vortex_ffi-shared
+    vortex_ffi-static
     protobuf::libprotobuf
     ${SECURITY_FRAMEWORK}
 )
