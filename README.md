@@ -57,18 +57,21 @@ The main binaries that will be built are:
 
 To run the extension code, simply start the shell with `./build/release/duckdb`.
 
-Now we can use the features from the extension directly in DuckDB. The template contains a single scalar function
-`vortex_duckdb()` that takes a string arguments and returns a string:
+### Writing a file
 
+To write a table to a vortex file use `COPY .. TO '...' (FORMAT VORTEX)`:
+```sql
+COPY (SELECT * from generate_series(0, 4)) TO 'FILENAME.vortex' (FORMAT VORTEX);
 ```
-D select vortex_duckdb('Jane') as result;
-┌───────────────┐
-│    result     │
-│    varchar    │
-├───────────────┤
-│ VortexDuckdb Jane 🐥 │
-└───────────────┘
+This will create a compressed vortex file from the sql table.
+
+### Reading a file
+
+To read a table from a vortex file:
+```sql
+select * from read_vortex('FILENAME.vortex');
 ```
+This command also supports glob syntax e.g. `read_vortex('FILE_WITH_GLOB*.vortex')`.
 
 ## Running the tests
 
