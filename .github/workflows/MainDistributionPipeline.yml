@@ -14,10 +14,10 @@ concurrency:
 jobs:
   duckdb-stable-build:
     name: Build extension binaries
-    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@6a7a4f24c5999355ab36c0a6835baf891fc9d522
+    uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@71d20029c5314dfc34f3bbdab808b9bce03b8003
     with:
-      duckdb_version: v1.2.2
-      ci_tools_version: 6a7a4f24c5999355ab36c0a6835baf891fc9d522
+      duckdb_version: v1.3.0
+      ci_tools_version: 71d20029c5314dfc34f3bbdab808b9bce03b8003
       extension_name: vortex
       exclude_archs: "wasm_mvp;wasm_eh;wasm_threads;windows_amd64_rtools;windows_amd64_mingw;windows_amd64;linux_arm64"
       extra_toolchains: "rust"
