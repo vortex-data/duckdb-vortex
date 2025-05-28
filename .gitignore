@@ -7,6 +7,9 @@ testext
 test/python/__pycache__/
 .Rhistory
 compile_commands.json
+corrosion
+CMakeFiles
 
-#proto gen folder
-gen/
+# Keep CMAKE
+
+!CMakeLists.txt
