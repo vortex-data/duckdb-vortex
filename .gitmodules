@@ -8,7 +8,7 @@
 	branch = main
 [submodule "duckdb"]
 	path = duckdb
-	url = https://github.com/spiraldb/duckdb.git
+	url = https://github.com/duckdb/duckdb.git
 [submodule "vcpkg"]
 	path = vcpkg
 	url = git@github.com:microsoft/vcpkg.git
