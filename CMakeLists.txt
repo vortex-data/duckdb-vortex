@@ -4,10 +4,7 @@ set(TARGET_NAME vortex)
 project(${TARGET_NAME}_project)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 17)
-
-# Allow C++20 designator syntax in C++17
-add_compile_options(-Wno-c++20-designator)
+set(CMAKE_CXX_STANDARD 20)
 
 include(FetchContent)
 FetchContent_Declare(
