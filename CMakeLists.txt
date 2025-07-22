@@ -6,9 +6,6 @@ project(${TARGET_NAME}_project)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
-# Allow C++20 designator syntax in C++17
-add_compile_options(-Wno-c++20-designator)
-
 include(FetchContent)
 FetchContent_Declare(
         Corrosion
@@ -18,43 +15,38 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Corrosion)
 
-find_package(Catch2 CONFIG REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
-
 if (APPLE)
     find_library(SECURITY_FRAMEWORK Security)
+    find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
 endif ()
 
 corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
         CRATES vortex-ffi
-        FEATURES duckdb mimalloc
+        FEATURES mimalloc
         CRATE_TYPES staticlib
         FLAGS --crate-type=staticlib
 )
 
-set(EXTENSION_NAME ${TARGET_NAME}_extension)
-set(EXTENSION_SOURCES src/vortex_extension.cpp src/vortex_expr.cpp src/vortex_write.cpp src/vortex_scan.cpp)
-set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
-
-# Generate C++ code from .proto files.
-file(GLOB PROTO_FILES "vortex/vortex-proto/proto/*.proto")
-set(PROTO_GEN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen)
-file(MAKE_DIRECTORY ${PROTO_GEN_DIR})
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES} PROTOC_OUT_DIR ${PROTO_GEN_DIR})
-
-include_directories(src/include ${PROTO_GEN_DIR} vortex/vortex-ffi/cinclude)
-
-build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES} ${PROTO_SRCS})
-set(PARAMETERS "-warnings")
-build_loadable_extension(${TARGET_NAME} ${PARAMETERS} ${EXTENSION_SOURCES} ${PROTO_SRCS})
-
-target_link_libraries(${EXTENSION_NAME}
-        vortex_ffi-static
-        protobuf::libprotobuf
-        ${SECURITY_FRAMEWORK}
+corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
+        CRATES vortex-duckdb
+        CRATE_TYPES staticlib
+        FLAGS --crate-type=staticlib
 )
 
-add_subdirectory(test)
+include_directories(src/include vortex/vortex-duckdb/include)
+
+set(EXTENSION_NAME ${TARGET_NAME}_extension)
+set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
+
+build_static_extension(${TARGET_NAME} src/vortex_extension.cpp)
+build_loadable_extension(${TARGET_NAME} -warnings src/vortex_extension.cpp)
+
+target_link_libraries(${EXTENSION_NAME}
+        vortex_duckdb-static
+        vortex_ffi-static
+        ${SECURITY_FRAMEWORK}
+        ${CORE_FOUNDATION_FRAMEWORK}
+)
 
 install(
         TARGETS ${EXTENSION_NAME}
