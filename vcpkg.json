@@ -1,1 +1,8 @@
-{}
+{
+  "dependencies": [
+    {
+      "name": "llvm",
+      "features": ["clang"]
+    }
+  ]
+}
