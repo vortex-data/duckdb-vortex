@@ -20,6 +20,12 @@ if (APPLE)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
 endif ()
 
+# Install clang and libclang in Linux Docker environment.
+if(EXISTS "/.dockerenv")
+    execute_process(COMMAND apt-get update)
+    execute_process(COMMAND apt-get install -y libclang-dev clang)
+endif()
+
 corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
         CRATES vortex-ffi
         FEATURES mimalloc
@@ -32,10 +38,6 @@ corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
         CRATE_TYPES staticlib
         FLAGS --crate-type=staticlib
 )
-
-# Set the LIBCLANG_PATH env var for rust-bindgen.
-message(STATUS "LIBCLANG_PATH: ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
-corrosion_set_env_vars(vortex_duckdb-static LIBCLANG_PATH="${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib")
 
 include_directories(src/include vortex/vortex-duckdb/include)
 
