@@ -20,10 +20,31 @@ if (APPLE)
     find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
 endif ()
 
-# Install clang and libclang in Linux Docker environment.
+# Install clang and libclang for Linux Docker builds. macOS has both of these pre-installed.
 if(EXISTS "/.dockerenv")
-    execute_process(COMMAND apt-get update)
-    execute_process(COMMAND apt-get install -y libclang-dev clang)
+    find_program(YUM_EXEC yum)
+    if(YUM_EXEC AND NOT INSTALL_SUCCESS)
+        message(STATUS "Using yum to install LLVM...")
+        execute_process(
+        COMMAND yum install -y clang-devel clang
+        RESULT_VARIABLE YUM_RESULT
+    )
+        if(YUM_RESULT EQUAL 0)
+            set(INSTALL_SUCCESS TRUE)
+        endif()
+    endif()
+
+    find_program(APK_EXEC apk)
+    if(APK_EXEC AND NOT INSTALL_SUCCESS)
+        message(STATUS "Using apk to install LLVM...")
+        execute_process(
+        COMMAND apk add --no-cache clang-dev clang
+        RESULT_VARIABLE APK_RESULT
+    )
+        if(APK_RESULT EQUAL 0)
+            set(INSTALL_SUCCESS TRUE)
+        endif()
+    endif()
 endif()
 
 corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
