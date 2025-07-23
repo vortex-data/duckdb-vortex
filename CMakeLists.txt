@@ -24,7 +24,6 @@ endif ()
 if(EXISTS "/.dockerenv")
     find_program(YUM_EXEC yum)
     if(YUM_EXEC AND NOT INSTALL_SUCCESS)
-        message(STATUS "Using yum to install LLVM...")
         execute_process(
         COMMAND yum install -y clang-devel clang
         RESULT_VARIABLE YUM_RESULT
@@ -36,7 +35,6 @@ if(EXISTS "/.dockerenv")
 
     find_program(APK_EXEC apk)
     if(APK_EXEC AND NOT INSTALL_SUCCESS)
-        message(STATUS "Using apk to install LLVM...")
         execute_process(
         COMMAND apk add --no-cache clang-dev clang
         RESULT_VARIABLE APK_RESULT
