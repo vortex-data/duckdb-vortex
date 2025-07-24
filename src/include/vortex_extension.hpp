@@ -1,6 +1,7 @@
 #pragma once
 
 #include "duckdb.hpp"
+#include "vortex.h"
 
 // The entry point class API can't be scoped to the vortex namespace.
 

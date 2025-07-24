@@ -1,7 +1,6 @@
 #define DUCKDB_EXTENSION_MAIN
 
 #include "vortex_extension.hpp"
-#include "vortex.h"
 
 using namespace duckdb;
 
