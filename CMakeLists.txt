@@ -46,13 +46,6 @@ if(EXISTS "/.dockerenv")
 endif()
 
 corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
-        CRATES vortex-ffi
-        FEATURES mimalloc
-        CRATE_TYPES staticlib
-        FLAGS --crate-type=staticlib
-)
-
-corrosion_import_crate(MANIFEST_PATH vortex/Cargo.toml
         CRATES vortex-duckdb
         CRATE_TYPES staticlib
         FLAGS --crate-type=staticlib
@@ -68,7 +61,6 @@ build_loadable_extension(${TARGET_NAME} -warnings src/vortex_extension.cpp)
 
 target_link_libraries(${EXTENSION_NAME}
         vortex_duckdb-static
-        vortex_ffi-static
         ${SECURITY_FRAMEWORK}
         ${CORE_FOUNDATION_FRAMEWORK}
 )
