@@ -5,8 +5,18 @@
 
 using namespace duckdb;
 
+extern "C" {
+DUCKDB_EXTENSION_API void vortex_init(duckdb::DatabaseInstance &db) {
+	vortex_init_rust(reinterpret_cast<duckdb_database>(&db));
+}
+
+DUCKDB_EXTENSION_API const char *vortex_version() {
+	return duckdb::DuckDB::LibraryVersion();
+}
+}
+
 static void LoadInternal(DatabaseInstance &db_instance) {
-	vortex_init(reinterpret_cast<duckdb_database>(&db_instance));
+	vortex_init_rust(reinterpret_cast<duckdb_database>(&db_instance));
 }
 
 /// Called when the extension is loaded by DuckDB.
@@ -32,7 +42,7 @@ std::string VortexExtension::Name() {
 
 //! Returns the version of the Vortex extension.
 std::string VortexExtension::Version() const {
-	return "0.41.2";
+	return vortex_extension_version_rust();
 }
 
 #ifndef DUCKDB_EXTENSION_MAIN
