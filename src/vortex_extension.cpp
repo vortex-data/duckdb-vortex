@@ -10,6 +10,10 @@ DUCKDB_EXTENSION_API void vortex_init(duckdb::DatabaseInstance &db) {
 	vortex_init_rust(reinterpret_cast<duckdb_database>(&db));
 }
 
+DUCKDB_EXTENSION_API void vortex_duckdb_cpp_init(duckdb::DatabaseInstance &db) {
+	vortex_init_rust(reinterpret_cast<duckdb_database>(&db));
+}
+
 DUCKDB_EXTENSION_API const char *vortex_version() {
 	return duckdb::DuckDB::LibraryVersion();
 }
@@ -24,8 +28,8 @@ static void LoadInternal(DatabaseInstance &db_instance) {
 ///
 /// Specifically, the `read_vortex` table function enables reading data from
 /// Vortex files in SQL queries.
-void VortexExtension::Load(duckdb::DuckDB &db) {
-	LoadInternal(*db.instance);
+void VortexExtension::Load(duckdb::ExtensionLoader &loader) {
+	LoadInternal(loader.GetDatabaseInstance());
 }
 
 /// Returns the name of the Vortex extension.

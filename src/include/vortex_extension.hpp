@@ -6,7 +6,7 @@
 
 class VortexExtension : public duckdb::Extension {
 public:
-	void Load(duckdb::DuckDB &db) override;
+	void Load(duckdb::ExtensionLoader &loader) override;
 	std::string Name() override;
 	std::string Version() const override;
 };
