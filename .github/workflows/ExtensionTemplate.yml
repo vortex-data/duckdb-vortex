@@ -43,7 +43,7 @@ jobs:
           git checkout ${{ matrix.duckdb_version }}
 
       - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11.1
+        uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgGitCommitId: 5e5d0e1cd7785623065e77eff011afdeec1a3574
 
@@ -96,7 +96,7 @@ jobs:
           git checkout ${{ matrix.duckdb_version }}
 
       - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11.1
+        uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgGitCommitId: 5e5d0e1cd7785623065e77eff011afdeec1a3574
 
@@ -145,7 +145,7 @@ jobs:
           git checkout ${{ matrix.duckdb_version }}
 
       - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11.1
+        uses: lukka/run-vcpkg@v11.5
         with:
           vcpkgGitCommitId: 5e5d0e1cd7785623065e77eff011afdeec1a3574
 
