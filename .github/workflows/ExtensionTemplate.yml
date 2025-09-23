@@ -85,7 +85,7 @@ jobs:
       - name: Install Ninja
         run: brew install ninja
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -133,7 +133,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
