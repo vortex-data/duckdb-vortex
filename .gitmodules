@@ -11,4 +11,3 @@
 [submodule "vortex"]
 	path = vortex
 	url = https://github.com/vortex-data/vortex.git
-	branch = main
