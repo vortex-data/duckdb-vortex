@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.22)
 set(TARGET_NAME vortex)
 project(${TARGET_NAME}_project)
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0)
+if(UNIX AND NOT APPLE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftls-model=global-dynamic")
+endif()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
