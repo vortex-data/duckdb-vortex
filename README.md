@@ -60,17 +60,21 @@ To run the extension code, simply start the shell with `./build/release/duckdb`.
 ### Writing a file
 
 To write a table to a vortex file use `COPY .. TO '...' (FORMAT VORTEX)`:
+
 ```sql
 COPY (SELECT * from generate_series(0, 4)) TO 'FILENAME.vortex' (FORMAT VORTEX);
 ```
+
 This will create a compressed vortex file from the sql table.
 
 ### Reading a file
 
 To read a table from a vortex file:
+
 ```sql
 select * from read_vortex('FILENAME.vortex');
 ```
+
 This command also supports glob syntax e.g. `read_vortex('FILE_WITH_GLOB*.vortex')`.
 
 ## Running the tests
@@ -102,7 +106,7 @@ con = duckdb.connect(':memory:', config={'allow_unsigned_extensions': 'true'})
 NodeJS:
 
 ```js
-db = new duckdb.Database(':memory:', {"allow_unsigned_extensions": "true"});
+db = new duckdb.Database(":memory:", { allow_unsigned_extensions: "true" });
 ```
 
 Secondly, you will need to set the repository endpoint in DuckDB to the HTTP url of your bucket + version of the
@@ -124,4 +128,20 @@ After running these steps, you can install and load your extension using the reg
 INSTALL
 vortex_duckdb
 LOAD vortex_duckdb
+```
+
+## Debugging
+
+To build the extension in debug mode, run:
+
+```sh
+make debug
+```
+
+This will create debug binaries in the `./build/debug` directory, which can be used with a debugger for troubleshooting and development.
+
+```sh
+./build/debug/duckdb -unsigned
+RUST_BACKTRACE=1 ./build/debug/duckdb -unsigned
+lldb -- ./build/debug/duckdb -unsigned
 ```
