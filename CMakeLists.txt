@@ -65,6 +65,12 @@ target_link_libraries(${EXTENSION_NAME}
         ${CORE_FOUNDATION_FRAMEWORK}
 )
 
+target_link_libraries(${LOADABLE_EXTENSION_NAME}
+        vortex_duckdb-static
+        ${SECURITY_FRAMEWORK}
+        ${CORE_FOUNDATION_FRAMEWORK}
+)
+
 install(
         TARGETS ${EXTENSION_NAME}
         EXPORT "${DUCKDB_EXPORT_SET}"
