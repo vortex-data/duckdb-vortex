@@ -20,8 +20,5 @@
   "separateMinorPatch": true,
   "patch": {
     "groupName": "all patch updates"
-  },
-  "git-submodules": {
-    "enabled": true
   }
 }
