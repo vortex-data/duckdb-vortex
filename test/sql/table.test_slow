@@ -50,4 +50,4 @@ SELECT
 FROM generate_series(1, 40000) AS t(seq);
 
 statement ok
-COPY generated_data_table TO '__TEST_DIR__/table_test.vortex' (FORMAT VORTEX);
+COPY generated_data_table TO '__TEST_DIR__/table_slow.vortex' (FORMAT VORTEX);
