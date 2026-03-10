@@ -8,11 +8,11 @@ require vortex
 
 # copy vortex
 statement ok
-COPY (SELECT * from generate_series(0, 4)) TO '__TEST_DIR__/test.vortex' (FORMAT VORTEX)
+COPY (SELECT * from generate_series(0, 4)) TO '__TEST_DIR__/sequence.vortex' (FORMAT VORTEX)
 
 # read vortex
 query I
-SELECT * FROM read_vortex('__TEST_DIR__/test.vortex');
+SELECT * FROM read_vortex('__TEST_DIR__/sequence.vortex');
 ----
 0
 1
