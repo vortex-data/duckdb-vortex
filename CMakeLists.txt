@@ -10,6 +10,16 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(USE_SHARED_VORTEX OFF)
+if (USE_SHARED_VORTEX)
+    set(VORTEX_LIB_TYPE "cdylib")
+    set(VORTEX_LIB_NAME "vortex_duckdb-shared")
+else()
+    set(VORTEX_LIB_TYPE "staticlib")
+    set(VORTEX_LIB_NAME "vortex_duckdb-static")
+endif()
+message("Using vortex lib type '${VORTEX_LIB_TYPE}'")
+
 include(FetchContent)
 FetchContent_Declare(
     Corrosion
@@ -51,8 +61,8 @@ endif()
 corrosion_import_crate(
     MANIFEST_PATH vortex/Cargo.toml
     CRATES vortex-duckdb
-    CRATE_TYPES staticlib
-    FLAGS --crate-type=staticlib
+    CRATE_TYPES ${VORTEX_LIB_TYPE}
+    FLAGS --crate-type=${VORTEX_LIB_TYPE}
 )
 
 include_directories(src/include vortex/vortex-duckdb/include)
@@ -67,14 +77,14 @@ set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic)
 
 target_compile_options(${EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
 target_link_libraries(${EXTENSION_NAME}
-    vortex_duckdb-static
+    ${VORTEX_LIB_NAME}
     ${SECURITY_FRAMEWORK}
     ${CORE_FOUNDATION_FRAMEWORK}
 )
 
 target_compile_options(${LOADABLE_EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
 target_link_libraries(${LOADABLE_EXTENSION_NAME}
-    vortex_duckdb-static
+    ${VORTEX_LIB_NAME}
     ${SECURITY_FRAMEWORK}
     ${CORE_FOUNDATION_FRAMEWORK}
 )
