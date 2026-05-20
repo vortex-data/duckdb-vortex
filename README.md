@@ -5,8 +5,6 @@ your own DuckDB extension.
 
 ---
 
-This extension, VortexDuckdb, allow you to ... <extension_goal>.
-
 ## Building
 
 ### Install required system dependencies
@@ -144,4 +142,10 @@ This will create debug binaries in the `./build/debug` directory, which can be u
 ./build/debug/duckdb -unsigned
 RUST_BACKTRACE=1 ./build/debug/duckdb -unsigned
 lldb -- ./build/debug/duckdb -unsigned
+```
+
+## Building shared Vortex library
+
+```sh
+~/duckdb-vortex make EXT_FLAGS='-DUSE_SHARED_VORTEX=1' reldebug -j
 ```
