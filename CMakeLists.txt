@@ -74,6 +74,7 @@ corrosion_import_crate(
 )
 
 # Forward the DuckDB version passed via CMake as an env var.
+message(STATUS "Forwarding DUCKDB_VERSION=${DUCKDB_VERSION} to Cargo")
 corrosion_set_env_vars(
     ${VORTEX_RUST_TARGET_NAME}
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
