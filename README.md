@@ -39,6 +39,9 @@ Now to build the extension, run:
 make
 ```
 
+The extension CMake requires `DUCKDB_VERSION` to be set such that Vortex can build against a pinned version. 
+When building outside of CI, a version can be passed as `-DDUCKDB_VERSION=<duckdb-version>` to CMake.
+
 The main binaries that will be built are:
 
 ```sh
