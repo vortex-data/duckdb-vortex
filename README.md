@@ -152,3 +152,9 @@ lldb -- ./build/debug/duckdb -unsigned
 ```sh
 ~/duckdb-vortex make EXT_FLAGS='-DUSE_SHARED_VORTEX=1' reldebug -j
 ```
+
+## Cherry-pick workflow
+
+When a PR is merged to `main`, the cherry-pick workflow automatically applies the squash commit to the current release branch.
+
+The current release branch is configured in `.github/workflows/CherryPick.yml` via the `RELEASE_BRANCH` env var.
