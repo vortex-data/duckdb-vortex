@@ -1,0 +1,55 @@
+# Cherry-pick workflow
+#
+# Automatically cherry-picks merged commits into the current release branch.
+#
+# To update the release branch, change RELEASE_BRANCH below.
+
+name: Cherry-pick
+
+on:
+  pull_request_target:
+    branches: [ "main" ]
+    types: [ closed ]
+
+env:
+  RELEASE_BRANCH: v1.5-variegata
+
+jobs:
+  cherry-pick:
+    name: Cherry-pick merged PR
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+        with:
+          ref: ${{ env.RELEASE_BRANCH }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cherry-pick squash commit
+        id: cherry-pick
+        env:
+          MERGE_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR_ID+$GITHUB_ACTOR@users.noreply.github.com"
+
+          git fetch origin main
+          git cherry-pick -x "$MERGE_COMMIT_SHA"
+          git push origin "HEAD:$RELEASE_BRANCH"
+
+      - name: Notify on failure
+        if: ${{ failure() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
+        run: |
+          gh pr comment "$PR_NUMBER" \
+            --body "@${MERGED_BY} Cherry-pick to \`$RELEASE_BRANCH\` failed. Please cherry-pick manually."
