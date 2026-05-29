@@ -10,13 +10,21 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# DUCKDB_VERSION is passed down as an env var to Vortex which
+# in turn builds against the respective version. It is mandatory 
+# that the version is set to prevent implicit ABI breaks.
+if(NOT DEFINED DUCKDB_VERSION OR "${DUCKDB_VERSION}" STREQUAL "")
+    message(FATAL_ERROR "DUCKDB_VERSION must be set by DuckDB's CMake build")
+endif()
+
 option(USE_SHARED_VORTEX OFF)
+set(VORTEX_RUST_TARGET_NAME "vortex_duckdb")
 if (USE_SHARED_VORTEX)
     set(VORTEX_LIB_TYPE "cdylib")
-    set(VORTEX_LIB_NAME "vortex_duckdb-shared")
+    set(VORTEX_LIB_NAME "${VORTEX_RUST_TARGET_NAME}-shared")
 else()
     set(VORTEX_LIB_TYPE "staticlib")
-    set(VORTEX_LIB_NAME "vortex_duckdb-static")
+    set(VORTEX_LIB_NAME "${VORTEX_RUST_TARGET_NAME}-static")
 endif()
 message("Using vortex lib type '${VORTEX_LIB_TYPE}'")
 
@@ -63,6 +71,13 @@ corrosion_import_crate(
     CRATES vortex-duckdb
     CRATE_TYPES ${VORTEX_LIB_TYPE}
     FLAGS --crate-type=${VORTEX_LIB_TYPE}
+)
+
+# Forward the DuckDB version passed via CMake as an env var.
+message(STATUS "Forwarding DUCKDB_VERSION=${DUCKDB_VERSION} to Cargo")
+corrosion_set_env_vars(
+    ${VORTEX_RUST_TARGET_NAME}
+    "DUCKDB_VERSION=${DUCKDB_VERSION}"
 )
 
 include_directories(src/include vortex/vortex-duckdb/include)
