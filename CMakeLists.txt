@@ -88,7 +88,13 @@ set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
 build_static_extension(${TARGET_NAME} src/vortex_extension.cpp)
 build_loadable_extension(${TARGET_NAME} "" src/vortex_extension.cpp)
 
-set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic)
+# MSVC's `cl` does not understand the GCC/Clang warning flags, so use the
+# equivalent high warning level there instead of dropping warnings entirely.
+if(MSVC)
+    set(VORTEX_WARNING_FLAGS /W4)
+else()
+    set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic)
+endif()
 
 target_compile_options(${EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
 target_link_libraries(${EXTENSION_NAME}
