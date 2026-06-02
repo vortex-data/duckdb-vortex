@@ -80,20 +80,12 @@ corrosion_set_env_vars(
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
 )
 
-# On musl (Alpine) the vortex crate is built as a staticlib and folded into the
-# loadable extension, which is a shared object. Rust's x86_64-unknown-linux-musl
-# target defaults to a static CRT and non-PIC codegen, so the archive fails to
-# link into a shared object (relocation R_X86_64_32 ... can not be used when
-# making a shared object). Build it position-independent against a dynamic CRT.
-# Scoped to musl via the loader path so glibc/macOS builds are unaffected.
-if(EXISTS "/lib/ld-musl-x86_64.so.1")
-    message(STATUS "musl libc detected: building vortex crate as PIC with dynamic CRT")
-    corrosion_add_target_rustflags(
-        ${VORTEX_RUST_TARGET_NAME}
-        "-Ctarget-feature=-crt-static"
-        "-Crelocation-model=pic"
-    )
-endif()
+# NOTE: musl (Alpine) build flags live in .cargo/config.toml under
+# [target.x86_64-unknown-linux-musl], NOT here. They must be applied via cargo
+# config rather than corrosion's RUSTFLAGS env, because (a) under --target, env
+# RUSTFLAGS only reaches the target artifacts, not the *host* build scripts, and
+# the custom-labels build script needs a dynamic CRT to dlopen libclang; and
+# (b) setting RUSTFLAGS env makes cargo ignore the [target] config entirely.
 
 include_directories(src/include vortex/vortex-duckdb/include)
 
