@@ -1,0 +1,23 @@
+# Host build-script linkage for the linux_amd64_musl extension build.
+#
+# In the Alpine/musl CI image the *host* is x86_64-unknown-linux-musl, so build
+# scripts are compiled for that triple. Rust defaults `crt-static = on` for musl,
+# producing a statically linked build-script executable. The `custom-labels`
+# crate (a mandatory dependency of vortex-duckdb / vortex-io) runs `bindgen` in
+# its build script, and bindgen `dlopen()`s libclang at runtime — which is
+# impossible from a fully static binary:
+#
+#   Unable to find libclang: "... libclang.so ... could not be opened:
+#   Dynamic loading not supported"
+#
+# Disabling crt-static for the musl triple makes host build scripts dynamically
+# linked, so they can dlopen libclang and the musl build proceeds.
+#
+# Note: corrosion already passes the equivalent flag (plus -Crelocation-model=pic)
+# to the extension *target* via RUSTFLAGS (see CMakeLists.txt). Under `--target`,
+# env RUSTFLAGS only affects the final target artifacts, not host build scripts;
+# this `[target.<triple>]` table — applied to host build scripts via
+# target-applies-to-host (default true) — is what covers them. Only consulted
+# when building for the musl triple, so glibc/macOS/Windows builds are unaffected.
+[target.x86_64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=-crt-static"]
