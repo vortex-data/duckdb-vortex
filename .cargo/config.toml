@@ -1,0 +1,27 @@
+# Build flags for the linux_amd64_musl extension build. These MUST live in cargo
+# config (not corrosion's RUSTFLAGS env), for two reasons:
+#
+#  1. Host build scripts. In the Alpine/musl image the host is
+#     x86_64-unknown-linux-musl, so build scripts compile for that triple. Rust
+#     defaults `crt-static = on` for musl, producing a *static* build-script
+#     binary. The `custom-labels` crate (a mandatory dep of vortex-duckdb /
+#     vortex-io) runs bindgen in its build script, and bindgen dlopen()s
+#     libclang — impossible from a static binary:
+#         Unable to find libclang: "... libclang.so ... could not be opened:
+#         Dynamic loading not supported"
+#     Under `--target`, env RUSTFLAGS only affects the target artifacts, not host
+#     build scripts. A `[target.<triple>]` config table, by contrast, also
+#     applies to host build scripts of that triple (target-applies-to-host,
+#     default true) — so disabling crt-static here makes them dynamically linked
+#     and able to dlopen libclang.
+#
+#  2. Relocation. The vortex crate is built as a staticlib folded into the
+#     loadable extension shared object; musl's default non-PIC codegen fails with
+#     "relocation R_X86_64_32 ... cannot be used when making a shared object".
+#     -Crelocation-model=pic fixes that for the target crate.
+#
+# Setting RUSTFLAGS env (as corrosion does) would make cargo IGNORE this table,
+# so the flags are kept here instead. Only consulted when building for the musl
+# triple, so glibc/macOS/Windows builds are unaffected.
+[target.x86_64-unknown-linux-musl]
+rustflags = ["-C", "target-feature=-crt-static", "-C", "relocation-model=pic"]

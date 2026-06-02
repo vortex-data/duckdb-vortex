@@ -19,5 +19,8 @@ jobs:
       ci_tools_version: v1.5.3
       duckdb_version: v1.5.3
       extension_name: vortex
-      exclude_archs: "wasm_mvp;wasm_eh;wasm_threads;windows_amd64_rtools;windows_amd64_mingw;windows_amd64;linux_amd64_musl"
+      exclude_archs: "wasm_mvp;wasm_eh;wasm_threads;windows_amd64_rtools;windows_amd64_mingw;windows_amd64"
+      # linux_amd64_musl is opt_in in extension-ci-tools' distribution_matrix.json,
+      # so removing it from exclude_archs is not enough — it must also be opted in here.
+      opt_in_archs: "linux_amd64_musl"
       extra_toolchains: "rust"

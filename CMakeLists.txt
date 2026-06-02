@@ -80,6 +80,13 @@ corrosion_set_env_vars(
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
 )
 
+# NOTE: musl (Alpine) build flags live in .cargo/config.toml under
+# [target.x86_64-unknown-linux-musl], NOT here. They must be applied via cargo
+# config rather than corrosion's RUSTFLAGS env, because (a) under --target, env
+# RUSTFLAGS only reaches the target artifacts, not the *host* build scripts, and
+# the custom-labels build script needs a dynamic CRT to dlopen libclang; and
+# (b) setting RUSTFLAGS env makes cargo ignore the [target] config entirely.
+
 include_directories(src/include vortex/vortex-duckdb/include)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
