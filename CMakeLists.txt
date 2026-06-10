@@ -80,7 +80,7 @@ corrosion_set_env_vars(
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
 )
 
-include_directories(src/include vortex/vortex-duckdb/include)
+include_directories(src/include vortex/vortex-duckdb/include vortex/vortex-duckdb/cpp/include)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
