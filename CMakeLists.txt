@@ -74,10 +74,12 @@ corrosion_import_crate(
 )
 
 # Forward the DuckDB version passed via CMake as an env var.
-message(STATUS "Forwarding DUCKDB_VERSION=${DUCKDB_VERSION} to Cargo")
+message("Forwarding DUCKDB_VERSION=${DUCKDB_VERSION} to Cargo")
+message("Forwarding DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR} to Cargo")
 corrosion_set_env_vars(
     ${VORTEX_RUST_TARGET_NAME}
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
+    "DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR}"
 )
 
 include_directories(src/include vortex/vortex-duckdb/include vortex/vortex-duckdb/cpp/include)
@@ -88,7 +90,7 @@ set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
 build_static_extension(${TARGET_NAME} src/vortex_extension.cpp)
 build_loadable_extension(${TARGET_NAME} "" src/vortex_extension.cpp)
 
-set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic)
+set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wno-unused-parameter)
 
 target_compile_options(${EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
 target_link_libraries(${EXTENSION_NAME}
