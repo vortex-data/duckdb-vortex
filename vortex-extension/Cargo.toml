@@ -1,0 +1,20 @@
+[package]
+name = "vortex-extension"
+description = "C-compatible Vortex DuckDB extension artifacts"
+edition = "2024"
+
+[lib]
+name = "vortex_duckdb"
+path = "src/lib.rs"
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "aa195e82a0f8e7eb76367e90642d6183b106c608" }
+
+# This improved build times significantly for default common cases that we use locally
+[profile.dev.package.vortex-fastlanes]
+debug = false
+
+# This improved build times significantly for default common cases that we use locally
+[profile.release.package.vortex-fastlanes]
+debug = false

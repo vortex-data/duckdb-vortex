@@ -7,6 +7,7 @@ testext
 test/python/__pycache__/
 .Rhistory
 compile_commands.json
+vortex-extension/target/
 
 #proto gen folder
 gen/

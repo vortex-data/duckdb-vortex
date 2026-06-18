@@ -1,18 +1,17 @@
 #define DUCKDB_EXTENSION_MAIN
 
 #include "vortex_extension.hpp"
-#include "duckdb_vx/table_function.h"
-#include "vortex.h"
+#include "vortex_rust.hpp"
 
 using namespace duckdb;
 
 extern "C" {
 DUCKDB_EXTENSION_API void vortex_init(duckdb::DatabaseInstance &db) {
-	vortex_init_rust(reinterpret_cast<duckdb_database>(&db));
+	vortex_init_rust(reinterpret_cast<void *>(&db));
 }
 
 DUCKDB_EXTENSION_API void vortex_duckdb_cpp_init(duckdb::DatabaseInstance &db) {
-	vortex_init_rust(reinterpret_cast<duckdb_database>(&db));
+	vortex_init_rust(reinterpret_cast<void *>(&db));
 }
 
 DUCKDB_EXTENSION_API const char *vortex_version() {
@@ -21,7 +20,7 @@ DUCKDB_EXTENSION_API const char *vortex_version() {
 }
 
 static void LoadInternal(DatabaseInstance &db_instance) {
-	vortex_init_rust(reinterpret_cast<duckdb_database>(&db_instance));
+	vortex_init_rust(reinterpret_cast<void *>(&db_instance));
 }
 
 /// Called when the extension is loaded by DuckDB.

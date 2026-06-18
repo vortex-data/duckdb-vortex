@@ -8,6 +8,3 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git
-[submodule "vortex"]
-	path = vortex
-	url = https://github.com/vortex-data/vortex.git
