@@ -10,7 +10,7 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "aa195e82a0f8e7eb76367e90642d6183b106c608" }
+vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "b68abbb68427ed545dbd18ee3b383f78d9c34d43" }
 
 # This improved build times significantly
 [profile.dev.package.vortex-fastlanes]
