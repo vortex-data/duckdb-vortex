@@ -67,8 +67,8 @@ if(EXISTS "/.dockerenv")
 endif()
 
 corrosion_import_crate(
-    MANIFEST_PATH vortex/Cargo.toml
-    CRATES vortex-duckdb
+    MANIFEST_PATH vortex-extension/Cargo.toml
+    CRATES vortex-extension
     CRATE_TYPES ${VORTEX_LIB_TYPE}
     FLAGS --crate-type=${VORTEX_LIB_TYPE}
 )
@@ -82,7 +82,7 @@ corrosion_set_env_vars(
     "DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR}"
 )
 
-include_directories(src/include vortex/vortex-duckdb/include vortex/vortex-duckdb/cpp/include)
+include_directories(src/include)
 
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
