@@ -862,6 +862,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-deque"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9dd111b7b7f7d55b72c0a6ae361660ee5853c9af73f70c3c2ef6858b950e2e51"
+dependencies = [
+ "crossbeam-epoch",
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "crossbeam-epoch"
 version = "0.9.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1027,6 +1037,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
+name = "earcutr"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79127ed59a85d7687c409e9978547cffb7dc79675355ed22da6b66fd5f6ead01"
+dependencies = [
+ "itertools 0.11.0",
+ "num-traits",
+]
+
+[[package]]
 name = "either"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1171,6 +1191,12 @@ dependencies = [
  "miniz_oxide",
  "zlib-rs",
 ]
+
+[[package]]
+name = "float_next_after"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bf7cc16383c4b8d58b9905a8509f02926ce3058053c056376248d958c9df1e8"
 
 [[package]]
 name = "fnv"
@@ -1326,6 +1352,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fc1a1678e54befc9b4bcab6cd43b8e7f834ae8ea121118b0fd8c42747675b4a"
+dependencies = [
+ "earcutr",
+ "float_next_after",
+ "geo-types",
+ "geographiclib-rs",
+ "i_overlay",
+ "log",
+ "num-traits",
+ "robust",
+ "rstar",
+ "spade",
+]
+
+[[package]]
 name = "geo-traits"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1342,6 +1386,8 @@ checksum = "94776032c45f950d30a13af6113c2ad5625316c9abfbccee4dd5a6695f8fe0f5"
 dependencies = [
  "approx",
  "num-traits",
+ "rayon",
+ "rstar",
  "serde",
 ]
 
@@ -1382,6 +1428,15 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "geographiclib-rs"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5a7f08910fd98737a6eda7568e7c5e645093e073328eeef49758cfe8b0489c7"
+dependencies = [
+ "libm",
 ]
 
 [[package]]
@@ -1463,6 +1518,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "hash32"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d60b12902ba28e2730cd37e95b8c9223af2808df9e902d4df49588d1470606"
+dependencies = [
+ "byteorder",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1474,6 +1538,17 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+dependencies = [
+ "allocator-api2",
+ "equivalent",
+ "foldhash",
+]
+
+[[package]]
+name = "hashbrown"
 version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
@@ -1481,6 +1556,16 @@ dependencies = [
  "allocator-api2",
  "equivalent",
  "foldhash",
+]
+
+[[package]]
+name = "heapless"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0bfb9eb618601c89945a70e254898da93b13be0388091d42117462b265bb3fad"
+dependencies = [
+ "hash32",
+ "stable_deref_trait",
 ]
 
 [[package]]
@@ -1628,6 +1713,49 @@ dependencies = [
  "tracing",
  "windows-registry",
 ]
+
+[[package]]
+name = "i_float"
+version = "1.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "010025c2c532c8d82e42d0b8bb5184afa449fa6f06c709ea9adcb16c49ae405b"
+dependencies = [
+ "libm",
+]
+
+[[package]]
+name = "i_key_sort"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9190f86706ca38ac8add223b2aed8b1330002b5cdbbce28fb58b10914d38fc27"
+
+[[package]]
+name = "i_overlay"
+version = "4.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "413183068e6e0289e18d7d0a1f661b81546e6918d5453a44570b9ab30cbed1b3"
+dependencies = [
+ "i_float",
+ "i_key_sort",
+ "i_shape",
+ "i_tree",
+ "rayon",
+]
+
+[[package]]
+name = "i_shape"
+version = "1.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ea154b742f7d43dae2897fcd5ead86bc7b5eefcedd305a7ebf9f69d44d61082"
+dependencies = [
+ "i_float",
+]
+
+[[package]]
+name = "i_tree"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35e6d558e6d4c7b82bc51d9c771e7a927862a161a7d87bf2b0541450e0e20915"
 
 [[package]]
 name = "iana-time-zone"
@@ -1795,6 +1923,15 @@ name = "is_terminal_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
+
+[[package]]
+name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
 
 [[package]]
 name = "itertools"
@@ -2760,6 +2897,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "rayon"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb39b166781f92d482534ef4b4b1b2568f42613b53e5b6c160e24cfbfa30926d"
+dependencies = [
+ "either",
+ "rayon-core",
+]
+
+[[package]]
+name = "rayon-core"
+version = "1.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91"
+dependencies = [
+ "crossbeam-deque",
+ "crossbeam-utils",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2901,6 +3058,23 @@ checksum = "1dedc5658c6ecb3bdb5ef5f3295bb9253f42dcf3fd1402c03f6b1f7659c3c4a9"
 dependencies = [
  "bytemuck",
  "byteorder",
+]
+
+[[package]]
+name = "robust"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e27ee8bb91ca0adcf0ecb116293afa12d393f9c2b9b9cd54d33e8078fe19839"
+
+[[package]]
+name = "rstar"
+version = "0.12.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "421400d13ccfd26dfa5858199c30a5d76f9c54e0dba7575273025b43c5175dbb"
+dependencies = [
+ "heapless",
+ "num-traits",
+ "smallvec",
 ]
 
 [[package]]
@@ -3260,6 +3434,18 @@ checksum = "52d1cfed4120b4d927bf7c0f86d2087a4a7d6027c906d9f9d525a80573b9be51"
 dependencies = [
  "libc",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "spade"
+version = "2.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9699399fd9349b00b184f5635b074f9ec93afffef30c853f8c875b32c0f8c7fa"
+dependencies = [
+ "hashbrown 0.16.1",
+ "num-traits",
+ "robust",
+ "smallvec",
 ]
 
 [[package]]
@@ -3774,7 +3960,7 @@ checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
 [[package]]
 name = "vortex"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "vortex-alp",
  "vortex-array",
@@ -3808,7 +3994,7 @@ dependencies = [
 [[package]]
 name = "vortex-alp"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "itertools 0.14.0",
  "num-traits",
@@ -3826,7 +4012,7 @@ dependencies = [
 [[package]]
 name = "vortex-array"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "arc-swap",
  "arcref",
@@ -3878,7 +4064,7 @@ dependencies = [
 [[package]]
 name = "vortex-array-macros"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3888,7 +4074,7 @@ dependencies = [
 [[package]]
 name = "vortex-btrblocks"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "itertools 0.14.0",
  "num-traits",
@@ -3915,7 +4101,7 @@ dependencies = [
 [[package]]
 name = "vortex-buffer"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "arrow-buffer",
  "bitvec",
@@ -3928,7 +4114,7 @@ dependencies = [
 [[package]]
 name = "vortex-bytebool"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "num-traits",
  "vortex-array",
@@ -3941,7 +4127,7 @@ dependencies = [
 [[package]]
 name = "vortex-compressor"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "itertools 0.14.0",
  "num-traits",
@@ -3959,7 +4145,7 @@ dependencies = [
 [[package]]
 name = "vortex-compute"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "vortex-buffer",
 ]
@@ -3967,7 +4153,7 @@ dependencies = [
 [[package]]
 name = "vortex-datetime-parts"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "num-traits",
  "prost",
@@ -3981,7 +4167,7 @@ dependencies = [
 [[package]]
 name = "vortex-decimal-byte-parts"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "num-traits",
  "prost",
@@ -3995,7 +4181,7 @@ dependencies = [
 [[package]]
 name = "vortex-duckdb"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "async-fs",
  "async-trait",
@@ -4025,7 +4211,7 @@ dependencies = [
 [[package]]
 name = "vortex-error"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "arrow-schema",
  "flatbuffers",
@@ -4045,7 +4231,7 @@ dependencies = [
 [[package]]
 name = "vortex-fastlanes"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "fastlanes",
  "itertools 0.14.0",
@@ -4062,7 +4248,7 @@ dependencies = [
 [[package]]
 name = "vortex-file"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4106,7 +4292,7 @@ dependencies = [
 [[package]]
 name = "vortex-flatbuffers"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "flatbuffers",
  "vortex-buffer",
@@ -4116,9 +4302,10 @@ dependencies = [
 [[package]]
 name = "vortex-fsst"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "fsst-rs",
+ "num-traits",
  "prost",
  "vortex-array",
  "vortex-buffer",
@@ -4130,10 +4317,13 @@ dependencies = [
 [[package]]
 name = "vortex-geo"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "arrow-array",
  "arrow-schema",
+ "geo",
+ "geo-traits",
+ "geo-types",
  "geoarrow",
  "prost",
  "vortex-array",
@@ -4145,7 +4335,7 @@ dependencies = [
 [[package]]
 name = "vortex-io"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "async-fs",
  "async-stream",
@@ -4174,7 +4364,7 @@ dependencies = [
 [[package]]
 name = "vortex-ipc"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "bytes",
  "flatbuffers",
@@ -4191,7 +4381,7 @@ dependencies = [
 [[package]]
 name = "vortex-layout"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "arcref",
  "arrow-array",
@@ -4233,7 +4423,7 @@ dependencies = [
 [[package]]
 name = "vortex-mask"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "itertools 0.14.0",
  "vortex-buffer",
@@ -4243,7 +4433,7 @@ dependencies = [
 [[package]]
 name = "vortex-metrics"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "parking_lot",
  "sketches-ddsketch",
@@ -4252,7 +4442,7 @@ dependencies = [
 [[package]]
 name = "vortex-pco"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "pco",
  "prost",
@@ -4266,7 +4456,7 @@ dependencies = [
 [[package]]
 name = "vortex-proto"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "prost",
  "prost-types",
@@ -4275,7 +4465,7 @@ dependencies = [
 [[package]]
 name = "vortex-runend"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "arrow-array",
  "itertools 0.14.0",
@@ -4291,7 +4481,7 @@ dependencies = [
 [[package]]
 name = "vortex-scan"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "async-trait",
  "futures",
@@ -4307,7 +4497,7 @@ dependencies = [
 [[package]]
 name = "vortex-sequence"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "num-traits",
  "prost",
@@ -4323,8 +4513,9 @@ dependencies = [
 [[package]]
 name = "vortex-session"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
+ "arc-swap",
  "lasso",
  "parking_lot",
  "vortex-error",
@@ -4334,7 +4525,7 @@ dependencies = [
 [[package]]
 name = "vortex-sparse"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "itertools 0.14.0",
  "num-traits",
@@ -4349,7 +4540,7 @@ dependencies = [
 [[package]]
 name = "vortex-utils"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "dashmap",
  "hashbrown 0.17.1",
@@ -4359,7 +4550,7 @@ dependencies = [
 [[package]]
 name = "vortex-zigzag"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "vortex-array",
  "vortex-buffer",
@@ -4372,7 +4563,7 @@ dependencies = [
 [[package]]
 name = "vortex-zstd"
 version = "0.1.0"
-source = "git+https://github.com/vortex-data/vortex.git?rev=b68abbb68427ed545dbd18ee3b383f78d9c34d43#b68abbb68427ed545dbd18ee3b383f78d9c34d43"
+source = "git+https://github.com/vortex-data/vortex.git?rev=890704f432c5b3267b4e7ceedfa9a2edf613bf42#890704f432c5b3267b4e7ceedfa9a2edf613bf42"
 dependencies = [
  "itertools 0.14.0",
  "prost",
