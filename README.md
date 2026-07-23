@@ -164,7 +164,7 @@ The current release branch is configured in `.github/workflows/CherryPick.yml` v
 The Vortex version is defined in `vortex-extension/Cargo.toml`. It can be a git commit, tag, branch or even a local path:
 
 ```toml
-vortex-duckdb = { path = "<path/to/vortex/vortex-duckdb`>}
+vortex-duckdb = { path = "<path/to/vortex/vortex-duckdb>"}
 ```
 
 See the Cargo docs for [git](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories) or [path](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies) dependencies for full details.
