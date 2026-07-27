@@ -66,11 +66,16 @@ if(EXISTS "/.dockerenv")
     endif()
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(VORTEX_CARGO_PROFILE PROFILE release-lto)
+endif()
+
 corrosion_import_crate(
     MANIFEST_PATH vortex-extension/Cargo.toml
     CRATES vortex-extension
     CRATE_TYPES ${VORTEX_LIB_TYPE}
     FLAGS --crate-type=${VORTEX_LIB_TYPE}
+    ${VORTEX_CARGO_PROFILE}
 )
 
 # Forward the DuckDB version passed via CMake as an env var.
