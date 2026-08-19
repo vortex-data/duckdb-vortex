@@ -1,150 +1,37 @@
 # Vortex DuckDB
 
-This repository is based on https://github.com/duckdb/extension-template, check it out if you want to build and ship
-your own DuckDB extension.
-
----
+If you encounter a bug or you have a feature request, please open an issue
+or discussion in https://github.com/vortex-data/vortex.
 
 ## Building
 
-### Install required system dependencies
-
-#### MacOS
-
-```shell
-brew install pkg-config
-```
-
-### Managing dependencies
-
-DuckDB extensions uses VCPKG for dependency management. Enabling VCPKG is very simple: follow
-the [installation instructions](https://vcpkg.io/en/getting-started) or just run the following:
-
-```shell
-git clone https://github.com/Microsoft/vcpkg.git
-./vcpkg/bootstrap-vcpkg.sh
-export VCPKG_TOOLCHAIN_PATH=`pwd`/vcpkg/scripts/buildsystems/vcpkg.cmake
-```
-
-Note: VCPKG is only required for extensions that want to rely on it for dependency management. If you want to develop an
-extension without dependencies, or want to do your own dependency management, just skip this step. Note that the example
-extension uses VCPKG to build with a dependency for instructive purposes, so when skipping this step the build may not
-work without removing the dependency.
-
-### Build steps
-
-Now to build the extension, run:
+Run:
 
 ```sh
 make
 ```
 
-The extension CMake requires `DUCKDB_VERSION` to be set such that Vortex can build against a pinned version. 
-When building outside of CI, a version can be passed as `-DDUCKDB_VERSION=<duckdb-version>` to CMake.
-
-The main binaries that will be built are:
+You will get a release build with the binaries being:
 
 ```sh
 ./build/release/duckdb
-./build/release/test/unittest
 ./build/release/extension/vortex_duckdb/vortex_duckdb.duckdb_extension
 ```
 
-- `duckdb` is the binary for the duckdb shell with the extension code automatically loaded.
-- `unittest` is the test runner of duckdb. Again, the extension is already linked into the binary.
-- `vortex_duckdb.duckdb_extension` is the loadable binary as it would be distributed.
+- `duckdb` includes Vortex extension linkes statically.
+- `vortex_duckdb.duckdb_extension` is the extension as distributed by Duckdb.
 
-## Running the extension
-
-To run the extension code, simply start the shell with `./build/release/duckdb`.
 
 ### Writing a file
 
-To write a table to a vortex file use `COPY .. TO '...' (FORMAT VORTEX)`:
-
 ```sql
-COPY (SELECT * from generate_series(0, 4)) TO 'FILENAME.vortex' (FORMAT VORTEX);
+COPY (SELECT * FROM generate_series(0, 4)) TO 'file.vortex';
 ```
-
-This will create a compressed vortex file from the sql table.
 
 ### Reading a file
 
-To read a table from a vortex file:
-
 ```sql
-select * from read_vortex('FILENAME.vortex');
-```
-
-This command also supports glob syntax e.g. `read_vortex('FILE_WITH_GLOB*.vortex')`.
-
-## Running the tests
-
-Different tests can be created for DuckDB extensions. The primary way of testing DuckDB extensions should be the SQL
-tests in `./test/sql`. These SQL tests can be run using:
-
-```sh
-make test
-```
-
-### Installing the deployed binaries
-
-To install your extension binaries from S3, you will need to do two things. Firstly, DuckDB should be launched with the
-`allow_unsigned_extensions` option set to true. How to set this will depend on the client you're using. Some examples:
-
-CLI:
-
-```shell
-duckdb -unsigned
-```
-
-Python:
-
-```python
-con = duckdb.connect(':memory:', config={'allow_unsigned_extensions': 'true'})
-```
-
-NodeJS:
-
-```js
-db = new duckdb.Database(":memory:", { allow_unsigned_extensions: "true" });
-```
-
-Secondly, you will need to set the repository endpoint in DuckDB to the HTTP url of your bucket + version of the
-extension
-you want to install. To do this run the following SQL query in DuckDB:
-
-```sql
-SET
-custom_extension_repository='bucket.s3.eu-west-1.amazonaws.com/<your_extension_name>/latest';
-```
-
-Note that the `/latest` path will allow you to install the latest extension version available for your current version
-of
-DuckDB. To specify a specific version, you can pass the version instead.
-
-After running these steps, you can install and load your extension using the regular INSTALL/LOAD commands in DuckDB:
-
-```sql
-INSTALL
-vortex_duckdb
-LOAD vortex_duckdb
-```
-
-## Debugging
-
-To build the extension in debug mode, run:
-
-```sh
-make debug
-```
-
-This will create debug binaries in the `./build/debug` directory, which can be used with a debugger for troubleshooting and development.
-
-```sh
-./build/debug/duckdb -unsigned
-RUST_BACKTRACE=1 ./build/debug/duckdb -unsigned
-lldb -- ./build/debug/duckdb -unsigned
+SELECT * FROM 'file.vortex';
 ```
 
 ## Building shared Vortex library
@@ -153,15 +40,9 @@ lldb -- ./build/debug/duckdb -unsigned
 ~/duckdb-vortex make EXT_FLAGS='-DUSE_SHARED_VORTEX=1' reldebug -j
 ```
 
-## Cherry-pick workflow
-
-When a PR is merged to `main`, the cherry-pick workflow automatically applies the squash commit to the current release branch.
-
-The current release branch is configured in `.github/workflows/CherryPick.yml` via the `RELEASE_BRANCH` env var.
-
 ## Changing Vortex version
 
-The Vortex version is defined in `vortex-extension/Cargo.toml`. It can be a git commit, tag, branch or even a local path:
+The Vortex version is defined in `vortex-extension/Cargo.toml`. It can be a git commit, tag, branch or a local path:
 
 ```toml
 vortex-duckdb = { path = "<path/to/vortex/vortex-duckdb>"}
