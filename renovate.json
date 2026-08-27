@@ -20,5 +20,15 @@
   "separateMinorPatch": true,
   "patch": {
     "groupName": "all patch updates"
-  }
+  },
+  "packageRules": [
+    {
+      "description": "Vortex revisions are bumped manually, not by Renovate",
+      "matchDepNames": [
+        "vortex-duckdb",
+        "https://github.com/vortex-data/vortex.git"
+      ],
+      "enabled": false
+    }
+  ]
 }
