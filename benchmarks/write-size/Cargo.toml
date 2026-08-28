@@ -1,0 +1,14 @@
+[package]
+name = "write-size-bench"
+description = "Write throughput and file size: Vortex vs (compressed) Parquet"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+arrow = "59.2"
+parquet = { version = "59.2", features = ["arrow", "snap", "zstd", "lz4", "brotli"] }
+tempfile = "3"
+tokio = { version = "1", features = ["full"] }
+vortex = { git = "https://github.com/vortex-data/vortex.git", rev = "68e2aee0afddc8eb0f3b216a7580c6743ab509f0", features = ["tokio"] }
+vortex-array = { git = "https://github.com/vortex-data/vortex.git", rev = "68e2aee0afddc8eb0f3b216a7580c6743ab509f0" }
