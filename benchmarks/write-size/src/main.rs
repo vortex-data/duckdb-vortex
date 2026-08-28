@@ -441,6 +441,12 @@ fn main() {
             measure("parquet_snappy", dir.path(), "parquet", &batches, |b, p| {
                 write_parquet(b, p, Compression::SNAPPY)
             }),
+            measure("parquet_lz4", dir.path(), "parquet", &batches, |b, p| {
+                write_parquet(b, p, Compression::LZ4_RAW)
+            }),
+            measure("parquet_lz4_hadoop", dir.path(), "parquet", &batches, |b, p| {
+                write_parquet(b, p, Compression::LZ4)
+            }),
             measure("parquet_zstd1", dir.path(), "parquet", &batches, |b, p| {
                 write_parquet(b, p, Compression::ZSTD(ZstdLevel::try_new(1).unwrap()))
             }),
