@@ -1,0 +1,63 @@
+
+=== profile: 1000000 rows, vortex_blocking, 17 iterations ===
+
+-- samples by nearest-frame area (7663 samples total) --
+fsst (string fragmentation)               2857    37.3%
+hashing                                   1688    22.0%
+zone map stats / aggregates                901    11.8%
+varbinview construction                    714     9.3%
+alloc / memcpy                             505     6.6%
+bitpacking / FoR / zigzag                  267     3.5%
+dict build/probe                           168     2.2%
+layout / segments / footer                 136     1.8%
+arrow conversion                           131     1.7%
+runend / RLE / sequence                    125     1.6%
+scheme search / cascade                     95     1.2%
+compressor stats (scheme scoring)           74     1.0%
+alp                                          2     0.0%
+
+-- self time by crate --
+fsst                                      2076    27.1%
+core                                      1626    21.2%
+hashbrown                                 1033    13.5%
+vortex_array                               864    11.3%
+*mut                                       453     5.9%
+itertools                                  352     4.6%
+alloc                                      245     3.2%
+vortex_fastlanes                           207     2.7%
+bytes                                      152     2.0%
+vortex_fsst                                126     1.6%
+u8                                          88     1.1%
+u64>                                        58     0.8%
+vortex_layout                               48     0.6%
+foldhash                                    44     0.6%
+vortex_buffer                               36     0.5%
+
+-- top 25 leaf functions (self time) --
+   1285  16.77%  <fsst::Code as core::cmp::PartialEq>::eq
+    590   7.70%  <hashbrown::control::tag::Tag>::full
+    397   5.18%  <*mut (vortex_array::arrays::primitive::native_value::NativeValue<i64>, u32)>::sub
+    354   4.62%  <core::slice::iter::Iter<vortex_array::arrays::varbinview::view::BinaryView> as core::iter::traits::iterator::
+    351   4.58%  itertools::minmax::minmax_impl::<core::iter::adapters::map::Map<core::iter::adapters::filter::Filter<core::ite
+    242   3.16%  <hashbrown::raw::RawTableInner>::is_bucket_full
+    231   3.01%  <fsst::builder::Counter>::record_count2
+    198   2.58%  <vortex_array::arrays::varbinview::view::BinaryView>::is_inlined
+    169   2.21%  vortex_fastlanes::bitpacking::array::bitpack_compress::bit_width_histogram_typed::<u16>
+    161   2.10%  fsst::advance_8byte_word
+    151   1.97%  <fsst::Compressor>::compress_word
+    140   1.83%  core::ptr::copy_nonoverlapping::<fsst::builder::Candidate>
+    135   1.76%  <fsst::builder::CompressorBuilder>::compress_count
+    131   1.71%  <bytes::bytes_mut::BytesMut>::len
+    117   1.53%  <vortex_array::builders::dict::bytes::BytesDictBuilder<u16>>::encode_varbinview::{closure#1}
+    115   1.50%  core::sync::atomic::atomic_sub::<usize, usize>
+    115   1.50%  core::ptr::copy_nonoverlapping::<u8>
+    104   1.36%  vortex_fsst::compress::view_bytes
+     85   1.11%  <alloc::collections::binary_heap::BinaryHeap<fsst::builder::Candidate>>::sift_down_to_bottom
+     81   1.06%  <u8 as core::slice::cmp::SliceOrd>::compare
+     77   1.00%  <core::option::Option<core::cmp::Ordering>>::is_some_and::<<core::cmp::Ordering>::is_le>
+     72   0.94%  core::sync::atomic::atomic_add::<usize, usize>
+     70   0.91%  vortex_array::aggregate_fn::fns::min_max::primitive::integer_min_max_raw::<i64>
+     70   0.91%  <hashbrown::raw::RawTableInner>::bucket_ptr
+     66   0.86%  core::ptr::read::<core::ptr::Packed<u64>>
+
+flamegraph written to flamegraph.svg

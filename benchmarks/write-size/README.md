@@ -18,8 +18,8 @@ The data generator follows the issue: 20 columns (3 `Int64`, 17 string) of synth
 log records, chunked into 8192-row `RecordBatch`es. The issue used `Utf8`; this benchmark emits
 `Utf8View` instead, which is the representation Vortex actually wants — see
 [Utf8 vs Utf8View input](#utf8-vs-utf8view-input) for the measured difference and
-`cargo run --release -- viewcmp` to reproduce it. `results/profile-1k.txt` predates that switch
-and is the only `Utf8` artefact still in the tree.
+`cargo run --release -- viewcmp` to reproduce it. Every artefact in `results/` is from `Utf8View`
+input.
 
 Writers measured:
 
@@ -447,3 +447,52 @@ Re-profiling at 100k rows confirms the mechanism — VarBinView construction fal
 The remaining areas grow as a share because the total shrank, not because they got slower. The
 top frame is now `fsst::Compressor::compress_into` at 12.4%, where before it was
 `MaybeUninit<BinaryView>::write` at 13.0% — actual compression rather than format conversion.
+
+## The profile on Utf8View input
+
+All three sizes re-profiled after the switch (`results/profile-{1k,100k,1m}.txt`). The regimes are
+genuinely different, so the size you profile at decides what you conclude.
+
+| area | 1k rows | 100k rows | 1M rows |
+| --- | ---: | ---: | ---: |
+| FSST | 46.7% | 37.7% | 37.3% |
+| hashing | 8.6% | 14.7% | 22.0% |
+| zone map stats / aggregates | 7.4% | 13.5% | 11.8% |
+| VarBinView construction | 1.2% | 4.4% | 9.3% |
+| alloc / memcpy | 15.3% | 7.3% | 6.6% |
+| bitpacking / FoR / zigzag | 4.7% | 4.2% | 3.5% |
+| dict build/probe | 1.5% | 8.9% | 2.2% |
+| scheme search / cascade | 4.6% | 2.2% | 1.2% |
+| compressor stats (scheme scoring) | 2.5% | 1.0% | 1.0% |
+| layout / segments / footer | 3.0% | 1.4% | 1.8% |
+
+FSST leads everywhere, but it is not the same FSST work at each end.
+
+At **1k rows** it is symbol table *training*: `Counter::record_count2` 8.3%,
+`*mut Candidate::add` 4.5%, `copy_nonoverlapping::<Candidate>` 3.6%, `compare_masked` 3.2%,
+`CompressorBuilder::optimize` 1.5%, `BinaryHeap::sift_up` 1.4%. Actual compression
+(`compress_into`) is 1.2%. Training runs a fixed number of rounds over a sample, so it costs the
+same regardless of chunk size — this is the ~1 ms per column floor, and it is why `alloc/memcpy`
+is 15.3% here (candidate buffers churned per column) and why scheme search and scoring are only
+visible at this size.
+
+At **1M rows** it is symbol *matching*: `fsst::Code::eq` alone is 16.8%, plus
+`advance_8byte_word` 2.1% and `compress_word` 2.0%. Training has faded to noise.
+
+The other movement worth noting:
+
+- **Hashing climbs steadily, 8.6% → 22.0%.** At 1M rows `hashbrown` is 13.5% of self time
+  (`Tag::full` 7.7%, `is_bucket_full` 3.2%). This is dictionary probing during scheme evaluation
+  on high-cardinality string columns, and at scale it is the second-largest cost in the writer.
+- **VarBinView construction rises 1.2% → 9.3%** even on view input. It did not vanish with the
+  format switch, it just stopped being input conversion — what remains is output buffers that
+  dict and FSST build, which scales with data. `BinaryView::is_inlined` at 2.6% of the 1M profile
+  is that work.
+- **Zone map statistics hold near 12%** at both larger sizes, dominated by `varbin_compute_min_max`
+  (`itertools::minmax` is 4.6% of the 1M profile). Still not what
+  `with_file_statistics(vec![])` disables.
+- **Scheme search itself stays cheap** — 4.6% at 1k, 1.2% at 1M. The cost is always inside the
+  scheme that wins, never in deciding which one that is.
+
+So the two levers are unchanged by the format switch, and they point at different sizes: a
+training threshold for small writes, and dictionary probing plus zone-map min/max for large ones.
