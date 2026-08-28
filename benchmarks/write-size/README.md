@@ -450,49 +450,77 @@ top frame is now `fsst::Compressor::compress_into` at 12.4%, where before it was
 
 ## The profile on Utf8View input
 
-All three sizes re-profiled after the switch (`results/profile-{1k,100k,1m}.txt`). The regimes are
-genuinely different, so the size you profile at decides what you conclude.
+Sampled at 999 Hz with `pprof`; there is no `perf` in the container.
+
+Attribution strips generic parameters from each frame to get its defining path, then walks
+leaf-outward to the first frame in a domain crate (`vortex*`, `fsst`, `pco`, `zstd`). Both halves
+matter. Matching raw symbols credits a frame by its type parameters, so
+`<Iter<varbinview::view::BinaryView> as Iterator>::next` — the min/max scan walking views — reads
+as VarBinView work. And `arrow_buffer` is deliberately not a domain crate: its `BitIterator` is
+plumbing for whoever iterates a validity mask, so it belongs to that caller. Non-domain frames
+(core memcpy, hashbrown probes) are likewise charged to the vortex function that invoked them.
 
 | area | 1k rows | 100k rows | 1M rows |
 | --- | ---: | ---: | ---: |
-| FSST | 46.7% | 37.7% | 37.3% |
-| hashing | 8.6% | 14.7% | 22.0% |
-| zone map stats / aggregates | 7.4% | 13.5% | 11.8% |
-| VarBinView construction | 1.2% | 4.4% | 9.3% |
-| alloc / memcpy | 15.3% | 7.3% | 6.6% |
-| bitpacking / FoR / zigzag | 4.7% | 4.2% | 3.5% |
-| dict build/probe | 1.5% | 8.9% | 2.2% |
-| scheme search / cascade | 4.6% | 2.2% | 1.2% |
-| compressor stats (scheme scoring) | 2.5% | 1.0% | 1.0% |
-| layout / segments / footer | 3.0% | 1.4% | 1.8% |
+| FSST | 53.1% | 38.8% | 40.6% |
+| zone map stats / min-max | 11.4% | 24.8% | 28.1% |
+| dict builder (builds VarBinView) | 2.1% | 9.1% | 11.3% |
+| bitpacking / FoR / zigzag | 3.1% | 3.0% | 3.4% |
+| varbinview array ops | 0.9% | 4.1% | 3.9% |
+| buffer / builders | 3.4% | 5.8% | 2.8% |
+| layout / segments / footer | 2.4% | 2.2% | 1.5% |
+| compressor stats (scheme scoring) | 4.4% | 1.6% | 0.6% |
+| runend / sequence | 1.4% | 1.4% | 1.3% |
+| scheme search / cascade | 0.8% | 0.2% | 0.1% |
+| other vortex | 16.2% | 8.5% | 6.0% |
 
-FSST leads everywhere, but it is not the same FSST work at each end.
+Three things run the writer.
 
-At **1k rows** it is symbol table *training*: `Counter::record_count2` 8.3%,
-`*mut Candidate::add` 4.5%, `copy_nonoverlapping::<Candidate>` 3.6%, `compare_masked` 3.2%,
-`CompressorBuilder::optimize` 1.5%, `BinaryHeap::sift_up` 1.4%. Actual compression
-(`compress_into`) is 1.2%. Training runs a fixed number of rounds over a sample, so it costs the
-same regardless of chunk size — this is the ~1 ms per column floor, and it is why `alloc/memcpy`
-is 15.3% here (candidate buffers churned per column) and why scheme search and scoring are only
-visible at this size.
+**FSST leads at every size, but does different work at each end.** At 1k rows it is symbol table
+*training*: `fsst::builder::CompressorBuilder` alone is 25.4% and `Counter` 9.8%, against
+`Compressor` (actual compression) at 5.7%. Training runs a fixed number of rounds over a sample,
+so it costs the same whatever the chunk holds — this is the ~1 ms per column floor. At 1M rows it
+inverts: `Compressor` is 18.4% and `CompressorBuilder` 9.8%.
 
-At **1M rows** it is symbol *matching*: `fsst::Code::eq` alone is 16.8%, plus
-`advance_8byte_word` 2.1% and `compress_word` 2.0%. Training has faded to noise.
+**Zone map min/max is the second cost and grows to 28.1%.** `varbin_compute_min_max` is 11.0% of
+the 1M profile on its own, with `integer_min_max_raw` and `is_sorted` behind it. It is a full
+lexicographic scan over every string value. Two things in it look wasteful for a non-nullable
+schema like this one:
 
-The other movement worth noting:
+```rust
+let mask = array.validity()?.execute_mask(array.len(), ctx)?.to_bit_buffer();
+let minmax = views.iter().zip(mask.iter()).filter(|(_, v)| *v)...
+```
 
-- **Hashing climbs steadily, 8.6% → 22.0%.** At 1M rows `hashbrown` is 13.5% of self time
-  (`Tag::full` 7.7%, `is_bucket_full` 3.2%). This is dictionary probing during scheme evaluation
-  on high-cardinality string columns, and at scale it is the second-largest cost in the writer.
-- **VarBinView construction rises 1.2% → 9.3%** even on view input. It did not vanish with the
-  format switch, it just stopped being input conversion — what remains is output buffers that
-  dict and FSST build, which scales with data. `BinaryView::is_inlined` at 2.6% of the 1M profile
-  is that work.
-- **Zone map statistics hold near 12%** at both larger sizes, dominated by `varbin_compute_min_max`
-  (`itertools::minmax` is 4.6% of the 1M profile). Still not what
-  `with_file_statistics(vec![])` disables.
-- **Scheme search itself stays cheap** — 4.6% at 1k, 1.2% at 1M. The cost is always inside the
-  scheme that wins, never in deciding which one that is.
+`to_bit_buffer()` on an `AllTrue` mask calls `BitBuffer::new_set(len)`, materialising an all-ones
+buffer per column per chunk, and then every element pays a zip-and-filter branch against it. An
+all-valid specialisation would drop both. Note this is not what `with_file_statistics(vec![])`
+disables — that controls file-level statistics only, which is why turning it off changed nothing
+in the earlier probe.
 
-So the two levers are unchanged by the format switch, and they point at different sizes: a
-training threshold for small writes, and dictionary probing plus zone-map min/max for large ones.
+**Dictionary building is third at 11.3%**, and it is the one place the write path really does
+construct VarBinView: `BytesDictBuilder` holds `views: BufferMut<BinaryView>` and calls
+`BinaryView::make_view` per value (`vortex-array/src/builders/dict/bytes.rs`). FSST does not —
+its codes are a decomposed bytes buffer plus offsets in `FSSTData`, reconstructible as a
+`VarBinArray` on demand, never a view array.
+
+Also worth noting: **scheme search itself is never the cost** — 0.8% at 1k falling to 0.1% at 1M.
+Scoring candidates (`vortex_compressor::stats`) is 4.4% at 1k and 0.6% at 1M. The time is always
+inside the scheme that wins, so trimming the candidate list would buy almost nothing; making the
+winner cheaper is the only lever.
+
+`vortex_compressor::stats::integer::inner_loop_nonnull` is worth separating out: it is 8.9% at
+100k and 10.6% at 1M, and it is bucketed under scheme scoring but is really per-chunk integer
+statistics feeding encoding choice.
+
+On `varbin_compute_min_max`, since the name invites the question: it takes `&VarBinViewArray` and
+iterates `array.views()`. "varbin" is the module filename, not the array type. `min_max/mod.rs`
+dispatches exactly one string arm, `Canonical::VarBinView`, with no `VarBin` arm, consistent with
+`Canonical::VarBinView` being the sole canonical encoding for `Utf8` and `Binary`. `VarBinArray`
+still exists as a non-canonical encoding but nothing in this write path produces one.
+
+### Sampling caveats
+
+The 1M profile is 18 iterations in a 40 s window, so roughly 7.5k samples; solid at the area level
+and noisy for individual sub-1% entries. `debug = 1` gives line tables but release inlining still
+folds small functions into callers, so leaf attribution is approximate at the margins.
