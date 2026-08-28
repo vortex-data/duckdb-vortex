@@ -1,0 +1,11 @@
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/sketches_ddsketch-6ffe10f01382b4b9.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/config.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/ddsketch.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/encoding.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/store.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libsketches_ddsketch-6ffe10f01382b4b9.rlib: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/config.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/ddsketch.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/encoding.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/store.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libsketches_ddsketch-6ffe10f01382b4b9.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/config.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/ddsketch.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/encoding.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/store.rs
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/config.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/ddsketch.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/encoding.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sketches-ddsketch-0.4.1/src/store.rs:

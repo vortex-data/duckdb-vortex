@@ -1,0 +1,12 @@
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/vortex_pco-d8de72c62689dd08.d: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/array.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/mod.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/cast.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/rules.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/slice.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libvortex_pco-d8de72c62689dd08.rlib: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/array.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/mod.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/cast.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/rules.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/slice.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libvortex_pco-d8de72c62689dd08.rmeta: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/array.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/mod.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/cast.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/rules.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/slice.rs
+
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/lib.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/array.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/mod.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/compute/cast.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/rules.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/pco/src/slice.rs:

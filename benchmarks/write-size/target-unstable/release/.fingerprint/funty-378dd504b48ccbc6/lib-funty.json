@@ -1,0 +1,1 @@
+{"rustc":2467252760697041086,"features":"[]","declared_features":"[\"default\", \"std\"]","target":9620198247805587849,"profile":2040997289075261528,"path":12557165375891613156,"deps":[],"local":[{"CheckDepInfo":{"dep_info":"release/.fingerprint/funty-378dd504b48ccbc6/dep-lib-funty","checksum":false}}],"rustflags":[],"config":9396254390672932401,"compile_kind":0}

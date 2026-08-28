@@ -17,8 +17,9 @@ use vortex::compressor::BtrBlocksCompressorBuilder;
 use vortex::file::{WriteOptionsSessionExt, WriteStrategyBuilder};
 use vortex::layout::LayoutStrategy;
 use vortex::io::runtime::BlockingRuntime;
-use vortex::io::runtime::current::CurrentThreadRuntime;
+use vortex::io::runtime::current::{CurrentThreadRuntime, CurrentThreadWorkerPool};
 use vortex::io::session::RuntimeSessionExt;
+use vortex::editions::{CORE_2026_08_3, EditionSessionExt};
 use vortex::session::VortexSession;
 use vortex::{VortexSessionDefault, array::ArrayRef as VortexArrayRef};
 use vortex::arrow::{FromArrowArray, FromArrowType};
@@ -35,6 +36,37 @@ static TOKIO_RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
 });
 static TOKIO_SESSION: LazyLock<VortexSession> =
     LazyLock::new(|| VortexSession::default().with_tokio());
+
+/// A second CurrentThreadRuntime driven by a background worker pool. Kept separate from
+/// `RUNTIME` because the pool's workers drive the whole executor, so sharing one would
+/// silently parallelise the single-threaded baseline too.
+static POOL_RUNTIME: LazyLock<CurrentThreadRuntime> = LazyLock::new(CurrentThreadRuntime::new);
+static POOL: LazyLock<CurrentThreadWorkerPool> = LazyLock::new(|| {
+    let pool = POOL_RUNTIME.new_pool();
+    pool.set_workers_to_available_parallelism();
+    pool
+});
+static POOL_SESSION: LazyLock<VortexSession> =
+    LazyLock::new(|| VortexSession::default().with_handle(POOL_RUNTIME.handle()));
+
+static TOKIO_MT_RUNTIME: LazyLock<tokio::runtime::Runtime> = LazyLock::new(|| {
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+});
+static TOKIO_MT_SESSION: LazyLock<VortexSession> =
+    LazyLock::new(|| VortexSession::default().with_tokio());
+
+/// Default session, but opted forward to the newest frozen core edition. The default is
+/// CORE_2026_08_1; 08_2 adds Map arrays and 08_3 adds Variant arrays and the UUID dtype.
+static LATEST_EDITION_SESSION: LazyLock<VortexSession> = LazyLock::new(|| {
+    let session = VortexSession::default().with_handle(RUNTIME.handle());
+    session
+        .enable_edition(CORE_2026_08_3)
+        .expect("CORE_2026_08_3 is registered");
+    session
+});
 
 fn create_test_batch(num_rows: usize, batch_size: Option<usize>) -> Vec<RecordBatch> {
     let batch_size = batch_size.unwrap_or(8192);
@@ -283,6 +315,73 @@ fn write_vortex_blocking(batches: &[RecordBatch], path: &Path) {
     write_vortex_blocking_with(batches, path, None)
 }
 
+/// Same blocking writer, but with background workers driving the executor so the per-column
+/// tasks the struct writer spawns can run concurrently.
+fn write_vortex_pool_with(
+    batches: &[RecordBatch],
+    path: &Path,
+    strategy: Option<Arc<dyn LayoutStrategy>>,
+) {
+    LazyLock::force(&POOL);
+    let dtype = DType::from_arrow(batches[0].schema());
+    let file = std::fs::File::create(path).unwrap();
+    let mut options = POOL_SESSION.write_options();
+    if let Some(strategy) = strategy {
+        options = options.with_strategy(strategy);
+    }
+    let mut writer = options.blocking(&*POOL_RUNTIME).writer(file, dtype);
+    for batch in batches {
+        writer
+            .push(VortexArrayRef::from_arrow(batch, false).unwrap())
+            .unwrap();
+    }
+    writer.finish().unwrap();
+}
+
+fn write_vortex_pool(batches: &[RecordBatch], path: &Path) {
+    write_vortex_pool_with(batches, path, None)
+}
+
+/// The async path on a multi-threaded Tokio runtime rather than a current-thread one.
+fn write_vortex_async_mt(batches: &[RecordBatch], path: &Path) {
+    TOKIO_MT_RUNTIME.block_on(async {
+        let schema = batches[0].schema();
+        let batches_clone: Vec<RecordBatch> = batches.to_vec();
+
+        let array_iter = ArrayIteratorAdapter::new(
+            DType::from_arrow(schema),
+            batches_clone
+                .into_iter()
+                .map(Ok::<RecordBatch, VortexError>)
+                .map(|batch_result| batch_result.and_then(|b| VortexArrayRef::from_arrow(b, false))),
+        );
+
+        let mut f = tokio::fs::File::create(path).await.unwrap();
+
+        TOKIO_MT_SESSION
+            .write_options()
+            .write(&mut f, array_iter.into_array_stream())
+            .await
+            .unwrap();
+    });
+}
+
+/// Default compressor and single-threaded runtime, but writing under the newest core edition.
+fn write_vortex_latest_edition(batches: &[RecordBatch], path: &Path) {
+    let dtype = DType::from_arrow(batches[0].schema());
+    let file = std::fs::File::create(path).unwrap();
+    let mut writer = LATEST_EDITION_SESSION
+        .write_options()
+        .blocking(&*RUNTIME)
+        .writer(file, dtype);
+    for batch in batches {
+        writer
+            .push(VortexArrayRef::from_arrow(batch, false).unwrap())
+            .unwrap();
+    }
+    writer.finish().unwrap();
+}
+
 struct Measurement {
     name: &'static str,
     median: Duration,
@@ -406,7 +505,147 @@ fn probe(dir: &Path) {
     println!("{:<28} {:>12} {:>12} {:>12}", "no file stats", format!("{:.3?}", m.median), format!("{:.3?}", m.min), m.bytes);
 }
 
+/// Sample the single-threaded blocking write and attribute the samples to compressor internals.
+#[cfg(target_os = "linux")]
+fn profile(dir: &Path, rows: usize, seconds: u64) {
+    use std::collections::HashMap;
+
+    let batches = create_test_batch(rows, None);
+    let path = dir.join("profile.vortex");
+
+    // Warm up so one-time init does not land in the profile.
+    write_vortex_blocking(&batches, &path);
+
+    let guard = pprof::ProfilerGuardBuilder::default()
+        .frequency(999)
+        .blocklist(&["libc", "libgcc", "pthread", "vdso"])
+        .build()
+        .unwrap();
+
+    let deadline = Instant::now() + Duration::from_secs(seconds);
+    let mut iters = 0u64;
+    while Instant::now() < deadline {
+        write_vortex_blocking(&batches, &path);
+        iters += 1;
+    }
+
+    let report = guard.report().build().unwrap();
+    println!("\n=== profile: {rows} rows, vortex_blocking, {iters} iterations ===");
+
+    // Attribution walks from the leaf outward and takes the FIRST frame that matches a bucket.
+    // Matching anywhere in the stack would credit everything to whichever scheme sits highest,
+    // which is wrong for a cascading compressor: FSST's integer codes are then bitpacked, so
+    // the bitpacking frames have FSST ancestors.
+    let buckets: &[(&str, &[&str])] = &[
+        ("fsst (string fragmentation)", &["fsst"]),
+        ("onpair (string fragmentation)", &["onpair"]),
+        ("zstd", &["zstd"]),
+        ("pco", &["pco"]),
+        ("dict build/probe", &["dict"]),
+        ("bitpacking / FoR / zigzag", &["fastlanes", "bitpack", "zigzag"]),
+        ("runend / RLE / sequence", &["runend", "sequence"]),
+        ("alp", &["alp"]),
+        ("compressor stats (scheme scoring)", &["vortex_compressor::stats"]),
+        ("zone map stats / aggregates", &["aggregate_fn", "min_max", "zone"]),
+        ("varbinview construction", &["varbinview", "binaryview"]),
+        ("scheme search / cascade", &["btrblocks", "cascad", "scheme", "sample"]),
+        ("arrow conversion", &["arrow"]),
+        ("layout / segments / footer", &["layout", "segment", "footer", "flatbuffer"]),
+        ("hashing", &["hashbrown", "hash"]),
+        ("alloc / memcpy", &["alloc", "malloc", "memcpy", "__rust_"]),
+    ];
+
+    let mut by_bucket: HashMap<&str, usize> = HashMap::new();
+    let mut by_leaf: HashMap<String, usize> = HashMap::new();
+    let mut by_crate: HashMap<String, usize> = HashMap::new();
+    let mut total = 0usize;
+
+    for (frames, count) in report.data.iter() {
+        let count = *count as usize;
+        total += count;
+
+        // pprof orders frames leaf-first.
+        let names: Vec<String> = frames
+            .frames
+            .iter()
+            .flat_map(|f| f.iter())
+            .map(|sym| format!("{sym}"))
+            .collect();
+
+        if let Some(leaf) = names.first() {
+            *by_leaf.entry(leaf.clone()).or_default() += count;
+            let krate = leaf
+                .trim_start_matches('<')
+                .split("::")
+                .next()
+                .unwrap_or("?")
+                .split(&[' ', '<'][..])
+                .next()
+                .unwrap_or("?")
+                .to_string();
+            *by_crate.entry(krate).or_default() += count;
+        }
+
+        let bucket = names
+            .iter()
+            .find_map(|name| {
+                let lower = name.to_lowercase();
+                buckets
+                    .iter()
+                    .find(|(_, needles)| needles.iter().any(|needle| lower.contains(needle)))
+                    .map(|(label, _)| *label)
+            })
+            .unwrap_or("other");
+        *by_bucket.entry(bucket).or_default() += count;
+    }
+
+    let pct = |c: usize| 100.0 * c as f64 / total as f64;
+
+    println!("\n-- samples by nearest-frame area ({total} samples total) --");
+    let mut rows_out: Vec<_> = by_bucket.into_iter().collect();
+    rows_out.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
+    for (name, count) in rows_out {
+        println!("{:<38} {:>7} {:>7.1}%", name, count, pct(count));
+    }
+
+    println!("\n-- self time by crate --");
+    let mut crates: Vec<_> = by_crate.into_iter().collect();
+    crates.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
+    for (name, count) in crates.into_iter().take(15) {
+        println!("{:<38} {:>7} {:>7.1}%", name, count, pct(count));
+    }
+
+    println!("\n-- top 25 leaf functions (self time) --");
+    let mut leaves: Vec<_> = by_leaf.into_iter().collect();
+    leaves.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
+    for (name, count) in leaves.into_iter().take(25) {
+        let short: String = name.chars().take(110).collect();
+        println!("{:>7} {:>6.2}%  {}", count, pct(count), short);
+    }
+
+    let flamegraph_path = std::path::Path::new("flamegraph.svg");
+    let file = std::fs::File::create(flamegraph_path).unwrap();
+    report.flamegraph(file).unwrap();
+    println!("\nflamegraph written to {}", flamegraph_path.display());
+}
+
 fn main() {
+    if std::env::args().nth(1).as_deref() == Some("profile") {
+        #[cfg(target_os = "linux")]
+        {
+            let dir = TempDir::new().unwrap();
+            let rows: usize = std::env::args()
+                .nth(2)
+                .and_then(|a| a.parse().ok())
+                .unwrap_or(100_000);
+            let seconds: u64 = std::env::args()
+                .nth(3)
+                .and_then(|a| a.parse().ok())
+                .unwrap_or(20);
+            profile(dir.path(), rows, seconds);
+        }
+        return;
+    }
     if std::env::args().nth(1).as_deref() == Some("probe") {
         let dir = TempDir::new().unwrap();
         probe(dir.path());
@@ -467,6 +706,12 @@ fn main() {
             measure("vortex_compact_bigblock", dir.path(), "vortex", &batches, |b, p| {
                 write_vortex_blocking_with(b, p, Some(compact_big_block_strategy()))
             }),
+            measure("vortex_pool", dir.path(), "vortex", &batches, write_vortex_pool),
+            measure("vortex_pool_compact", dir.path(), "vortex", &batches, |b, p| {
+                write_vortex_pool_with(b, p, Some(compact_strategy()))
+            }),
+            measure("vortex_async_mt", dir.path(), "vortex", &batches, write_vortex_async_mt),
+            measure("vortex_latest_edition", dir.path(), "vortex", &batches, write_vortex_latest_edition),
         ];
 
         println!(

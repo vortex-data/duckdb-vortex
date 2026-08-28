@@ -1,0 +1,12 @@
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/vortex_metrics-3fe3161d0ec3f777.d: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/tracing.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/counter.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/gauge.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/histogram.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/timer.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libvortex_metrics-3fe3161d0ec3f777.rlib: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/tracing.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/counter.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/gauge.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/histogram.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/timer.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libvortex_metrics-3fe3161d0ec3f777.rmeta: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/tracing.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/counter.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/gauge.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/histogram.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/timer.rs
+
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/lib.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/tracing.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/counter.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/gauge.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/histogram.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/vortex-metrics/src/timer.rs:

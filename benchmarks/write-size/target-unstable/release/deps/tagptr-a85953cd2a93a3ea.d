@@ -1,0 +1,12 @@
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/tagptr-a85953cd2a93a3ea.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros/doc.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/atomic.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/non_null.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/ptr.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libtagptr-a85953cd2a93a3ea.rlib: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros/doc.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/atomic.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/non_null.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/ptr.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libtagptr-a85953cd2a93a3ea.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros/doc.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/atomic.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/non_null.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/ptr.rs
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/macros/doc.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/atomic.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/non_null.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tagptr-0.2.0/src/imp/ptr.rs:

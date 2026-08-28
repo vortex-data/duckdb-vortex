@@ -1,0 +1,57 @@
+
+=== 1000 rows, 1 batch(es), 549528 arrow in-memory bytes ===
+writer                       median          min     file bytes        MiB/s   vs arrow
+parquet_uncompressed        1.237ms      1.016ms         232718        423.7      2.36x
+parquet_snappy              1.343ms      1.132ms          52238        390.4     10.52x
+parquet_lz4                 1.283ms      1.159ms          49540        408.6     11.09x
+parquet_lz4_hadoop          1.319ms      1.088ms          49861        397.3     11.02x
+parquet_zstd1               2.301ms      2.043ms          23989        227.8     22.91x
+parquet_zstd3               2.307ms      1.976ms          24132        227.2     22.77x
+parquet_zstd9               5.166ms      4.371ms          23467        101.5     23.42x
+vortex_async               73.082ms     68.848ms          76240          7.2      7.21x
+vortex_blocking            60.253ms     57.340ms          76240          8.7      7.21x
+vortex_compact             91.333ms     86.956ms          25520          5.7     21.53x
+vortex_bigblock            61.251ms     57.014ms          76240          8.6      7.21x
+vortex_compact_bigblock     93.350ms     87.943ms          25520          5.6     21.53x
+vortex_pool                23.238ms     19.897ms          76240         22.6      7.21x
+vortex_pool_compact        29.804ms     26.721ms          25520         17.6     21.53x
+vortex_async_mt            35.021ms     27.672ms          76240         15.0      7.21x
+vortex_latest_edition      61.330ms     58.521ms          76336          8.5      7.20x
+
+=== 100000 rows, 13 batch(es), 53726968 arrow in-memory bytes ===
+writer                       median          min     file bytes        MiB/s   vs arrow
+parquet_uncompressed       73.836ms     64.561ms       18525617        693.9      2.90x
+parquet_snappy             77.220ms     73.143ms        2758568        663.5     19.48x
+parquet_lz4                78.586ms     74.721ms        2390881        652.0     22.47x
+parquet_lz4_hadoop         78.171ms     74.746ms        2391893        655.5     22.46x
+parquet_zstd1              82.642ms     78.812ms         761412        620.0     70.56x
+parquet_zstd3              90.362ms     83.659ms         781090        567.0     68.78x
+parquet_zstd9             212.272ms    207.995ms         690599        241.4     77.80x
+vortex_async              390.781ms    374.844ms        3467080        131.1     15.50x
+vortex_blocking           366.220ms    363.218ms        3467080        139.9     15.50x
+vortex_compact            400.856ms    385.029ms         417992        127.8    128.54x
+vortex_bigblock           359.730ms    342.596ms        3350464        142.4     16.04x
+vortex_compact_bigblock    298.341ms    284.767ms         506264        171.7    106.12x
+vortex_pool               117.797ms    109.270ms        3467080        435.0     15.50x
+vortex_pool_compact       126.457ms    116.900ms         417992        405.2    128.54x
+vortex_async_mt           131.202ms    118.078ms        3467080        390.5     15.50x
+vortex_latest_edition     367.193ms    358.776ms        3467176        139.5     15.50x
+
+=== 1000000 rows, 123 batch(es), 536406088 arrow in-memory bytes ===
+writer                       median          min     file bytes        MiB/s   vs arrow
+parquet_uncompressed      702.949ms    671.265ms      183752650        727.7      2.92x
+parquet_snappy            572.865ms    569.987ms       24410331        893.0     21.97x
+parquet_lz4               584.216ms    571.197ms       20662054        875.6     25.96x
+parquet_lz4_hadoop        568.125ms    557.383ms       20670434        900.4     25.95x
+parquet_zstd1             602.567ms    587.196ms        4538650        849.0    118.19x
+parquet_zstd3             662.864ms    653.896ms        4309735        771.7    124.46x
+parquet_zstd9                1.759s       1.736s        3899632        290.8    137.55x
+vortex_async                 3.032s       3.007s       33361856        168.7     16.08x
+vortex_blocking              2.952s       2.921s       33361856        173.3     16.08x
+vortex_compact               3.031s       3.005s        3919280        168.8    136.86x
+vortex_bigblock              2.351s       2.295s       36513704        217.6     14.69x
+vortex_compact_bigblock       1.948s       1.916s        3860136        262.6    138.96x
+vortex_pool               885.588ms    875.873ms       33361856        577.6     16.08x
+vortex_pool_compact       940.491ms    927.684ms        3919280        543.9    136.86x
+vortex_async_mt           865.348ms    844.756ms       33361856        591.2     16.08x
+vortex_latest_edition        2.899s       2.872s       33361952        176.5     16.08x

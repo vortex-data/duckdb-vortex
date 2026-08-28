@@ -12,3 +12,15 @@ tempfile = "3"
 tokio = { version = "1", features = ["full"] }
 vortex = { git = "https://github.com/vortex-data/vortex.git", rev = "68e2aee0afddc8eb0f3b216a7580c6743ab509f0", features = ["tokio"] }
 vortex-array = { git = "https://github.com/vortex-data/vortex.git", rev = "68e2aee0afddc8eb0f3b216a7580c6743ab509f0" }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+pprof = { version = "0.14", features = ["flamegraph"] }
+
+[profile.release]
+# Needed for the `profile` subcommand to resolve inlined frames.
+debug = 1
+
+[features]
+# Adds OnPair (strings) and Delta (integers) to the default scheme list, ZstdBuffers to compact,
+# and enables the newest preview edition in the default session.
+unstable = ["vortex/unstable_encodings"]

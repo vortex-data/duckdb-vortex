@@ -1,0 +1,12 @@
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/vortex_bytebool-b7491005bb8951c6.d: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/array.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/compute.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/kernel.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/rules.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/slice.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libvortex_bytebool-b7491005bb8951c6.rlib: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/array.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/compute.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/kernel.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/rules.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/slice.rs
+
+/home/user/duckdb-vortex/benchmarks/write-size/target-unstable/release/deps/libvortex_bytebool-b7491005bb8951c6.rmeta: /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/lib.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/array.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/compute.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/kernel.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/rules.rs /root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/slice.rs
+
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/lib.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/array.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/compute.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/kernel.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/rules.rs:
+/root/.cargo/git/checkouts/vortex-0eff073da78b9952/68e2aee/encodings/bytebool/src/slice.rs:

@@ -264,3 +264,135 @@ non-compact layout. The Python bindings expose the choice as
 `--strategy compact`; DuckDB has no equivalent. On text-heavy tables that makes
 `COPY … TO 'x.vortex'` produce a much larger file than
 `COPY … TO 'x.parquet' (COMPRESSION zstd)`, with no way to ask for anything else.
+
+---
+
+# Follow-ups: threading, unstable encodings, and a profile
+
+Three further questions, measured on the same box and the same vortex rev. Raw output for all of
+these is in `results/`.
+
+```sh
+cargo run --release -- 1000 100000 1000000              # adds the threaded writers
+cargo run --release --features unstable -- 1000 100000 1000000
+cargo run --release -- profile 100000 25                # sampling profile + flamegraph.svg
+```
+
+New writers:
+
+| writer | what it is |
+| --- | --- |
+| `vortex_pool` | blocking writer, but a `CurrentThreadWorkerPool` sized to available parallelism drives the executor |
+| `vortex_pool_compact` | the same, with compact schemes |
+| `vortex_async_mt` | the async path on a multi-threaded Tokio runtime |
+| `vortex_latest_edition` | default compressor, session opted forward to `CORE_2026_08_3` |
+
+## 1. Threading the blocking write
+
+The struct writer already spawns one task per column (`vortex-layout/src/layouts/struct_/writer.rs`,
+joined with `try_join_all`). A bare `CurrentThreadRuntime` does no work unless someone calls
+`block_on`, so those tasks run one after another. Attaching a worker pool — three workers on this
+4 vCPU box — runs them concurrently, and nothing else has to change:
+
+| rows | `vortex_blocking` | `vortex_pool` | speedup |
+| ---: | ---: | ---: | ---: |
+| 1,000 | 42.1 ms | 18.2 ms | 2.3x |
+| 100,000 | 232 ms | 85.5 ms | 2.7x |
+| 1,000,000 | 2.073 s | 664 ms | 3.1x |
+
+That closes almost all of the gap to Parquet at scale. At 1M rows pooled Vortex (664 ms) is within
+11% of snappy (598 ms) and within 2% of zstd(1) (651 ms), against 3.4x behind before. The
+multi-threaded Tokio runtime lands in the same place (667 ms), so this is a property of the
+executor, not of the blocking-vs-async API.
+
+The best size/speed point in the whole matrix is `vortex_pool_compact`: at 1M rows, 741 ms for
+3,919,000 bytes. That is 14% smaller than zstd(1) Parquet for 14% more write time, and the same
+size as zstd(9) Parquet in 2.35x less time.
+
+Parallelism does not rescue the small-write case. At 1,000 rows the pool still leaves Vortex 13x
+behind snappy, because the per-column cost is paid either way and there are only so many cores to
+spread it over.
+
+## 2. `unstable_encodings` and the newest editions
+
+The feature adds `OnPairScheme` (strings) and `DeltaScheme` (integers) to `ALL_SCHEMES`, and
+enables the newest preview edition in the default session. On the default compressor it is a large
+size win at a real time cost:
+
+| rows | stable bytes | unstable bytes | change | stable time | unstable time |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 86,440 | 76,240 | -11.8% | 42.1 ms | 60.3 ms |
+| 100,000 | 5,058,784 | 3,467,080 | -31.5% | 232 ms | 366 ms |
+| 1,000,000 | 55,959,392 | 33,361,856 | -40.4% | 2.073 s | 2.952 s |
+
+OnPair beats FSST on these string columns and the gap widens with data volume. Delta comes along
+via the preview edition but these integer columns are sequential or low-cardinality and already
+suit FoR plus bitpacking.
+
+On the compact compressor it is all cost and no benefit:
+
+| 1M rows | stable | unstable |
+| --- | --- | --- |
+| `vortex_compact` | 3,919,000 in 2.229 s | 3,919,280 in 3.031 s |
+| `vortex_compact_bigblock` | 3,859,856 in 1.788 s | 3,860,136 in 1.948 s |
+
+Byte-for-byte the same output for 36% more time. Once Zstd is in the scheme list it wins these
+columns outright, so OnPair and Delta are sampled and then discarded. `ZstdBuffers`, the other
+scheme the feature unlocks, is only wired into `only_cuda_compatible`, not `with_compact`.
+
+Even at -40%, default Vortex with unstable encodings is 33.4 MB against zstd(1) Parquet's 4.5 MB.
+Lightweight encodings alone do not close a gap that an entropy coder opens on redundant text.
+
+**The editions make no difference.** `CORE_2026_08_3` against the default `CORE_2026_08_1` gives
+2.070 s vs 2.073 s and a file 96 bytes larger. `CORE_2026_08_2` adds Map arrays and
+`CORE_2026_08_3` adds Variant arrays and the UUID dtype; an Int64/Utf8 schema uses none of them.
+Note that `vortex.onpair` is the sole member of `CORE_2026_08_1`, the default edition — OnPair is
+already permitted by the write policy today, so this is a cargo-feature gate, not an edition one,
+and enabling it needs no edition opt-in.
+
+## 3. Where the compressor spends its time
+
+Sampled in-process at 999 Hz (`pprof`); there is no `perf` in the container. Samples are
+attributed to the first matching frame walking outward from the leaf, because matching anywhere in
+the stack credits everything to whichever scheme sits highest — FSST's integer codes are then
+bitpacked, so bitpacking frames have FSST ancestors.
+
+At 100,000 rows, where real compression work dominates:
+
+| area | share |
+| --- | ---: |
+| FSST | 33.1% |
+| VarBinView construction | 19.7% |
+| zone map stats / aggregates | 11.9% |
+| hashing | 9.6% |
+| alloc / memcpy | 8.2% |
+| dict build/probe | 4.9% |
+| bitpacking / FoR / zigzag | 3.9% |
+| scheme search / cascade | 2.0% |
+| compressor stats (scheme scoring) | 1.8% |
+
+Top single frame is `MaybeUninit<BinaryView>::write` at 13.0%, then
+`fsst::Compressor::compress_into` at 9.5%.
+
+At 1,000 rows, where the per-column floor dominates, FSST rises to 51.7% — and the split within
+FSST changes. The hot frames are no longer compression but **symbol table training**:
+`compare_masked` 4.4%, `CompressorBuilder::compress_count` 3.8%, `CompressorBuilder::optimize`
+3.7%, `Counter::record_count2` 2.6%, `BinaryHeap<Candidate>::sift_up` 2.4%. At 100k rows
+`compress_into` (actual compression) leads instead.
+
+That is the explanation for the ~1 ms per column floor. FSST trains a symbol table per column per
+chunk, and training runs a fixed number of optimisation rounds over a sample, so it costs roughly
+the same whether the chunk holds 10 rows or 10,000. On a tiny write you pay full training for
+almost no data — which is also why the earlier empty-compressor probe cut the 20-column 10-row
+write from 14.3 ms to 2.8 ms.
+
+Two other things worth noting from the profile:
+
+- **VarBinView construction at 19.7% is not compression at all.** It is Arrow Utf8 being
+  canonicalised into VarBinView plus the output buffers dict and FSST build.
+- **Zone map statistics cost 11.9%**, largely `varbin_compute_min_max` over the string columns.
+  This is not what `with_file_statistics(vec![])` disables — that controls file-level statistics
+  only, which is why turning it off changed nothing in the earlier probe.
+
+The cheapest available win for small writes is therefore a size threshold below which FSST
+training is skipped in favour of a fixed encoding, rather than anything in the layout or IO path.

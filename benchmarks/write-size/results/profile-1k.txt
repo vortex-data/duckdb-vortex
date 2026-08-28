@@ -1,0 +1,64 @@
+
+=== profile: 1000 rows, vortex_blocking, 466 iterations ===
+
+-- samples by nearest-frame area (4107 samples total) --
+fsst (string fragmentation)               2124    51.7%
+alloc / memcpy                             469    11.4%
+hashing                                    310     7.5%
+zone map stats / aggregates                300     7.3%
+bitpacking / FoR / zigzag                  184     4.5%
+scheme search / cascade                    178     4.3%
+arrow conversion                           162     3.9%
+varbinview construction                     98     2.4%
+layout / segments / footer                  97     2.4%
+compressor stats (scheme scoring)           95     2.3%
+runend / RLE / sequence                     49     1.2%
+dict build/probe                            37     0.9%
+alp                                          3     0.1%
+pco                                          1     0.0%
+
+-- self time by crate --
+fsst                                       995    24.2%
+core                                       991    24.1%
+vortex_array                               520    12.7%
+u64>                                       402     9.8%
+alloc                                      333     8.1%
+usize                                      185     4.5%
+vortex_compressor                           90     2.2%
+vortex_fastlanes                            83     2.0%
+hashbrown                                   75     1.8%
+dyn                                         57     1.4%
+(usize,                                     53     1.3%
+bytes                                       44     1.1%
+vortex_fsst                                 41     1.0%
+vortex_btrblocks                            30     0.7%
+vortex_buffer                               23     0.6%
+
+-- top 25 leaf functions (self time) --
+    205   4.99%  <u64>::wrapping_mul
+    197   4.80%  <u64>::leading_zeros
+    179   4.36%  fsst::compare_masked
+    157   3.82%  <fsst::builder::CompressorBuilder>::compress_count
+    153   3.73%  <fsst::Compressor>::compress_into
+    151   3.68%  <fsst::builder::CompressorBuilder>::optimize
+    114   2.78%  <core::option::Option<core::cmp::Ordering>>::is_some_and::<<core::cmp::Ordering>::is_le>
+    111   2.70%  core::sync::atomic::atomic_sub::<usize, usize>
+    105   2.56%  <fsst::builder::Counter>::record_count2
+     98   2.39%  <alloc::collections::binary_heap::BinaryHeap<fsst::builder::Candidate>>::sift_up
+     87   2.12%  core::core_arch::x86::sse2::_mm_movemask_epi8
+     86   2.09%  <fsst::Code>::len
+     76   1.85%  <usize as core::slice::index::SliceIndex<[fsst::builder::Candidate]>>::get_unchecked
+     74   1.80%  <alloc::collections::binary_heap::BinaryHeap<fsst::builder::Candidate>>::sift_down_to_bottom
+     73   1.78%  <fsst::builder::CodesBitmap>::is_set
+     67   1.63%  <usize as core::slice::index::SliceIndex<[fsst::builder::CodesBitmap]>>::index
+     57   1.39%  core::ptr::copy_nonoverlapping::<fsst::builder::Candidate>
+     53   1.29%  <(usize, usize) as core::cmp::Ord>::cmp
+     53   1.29%  core::ptr::copy_nonoverlapping::<u8>
+     46   1.12%  core::sync::atomic::atomic_add::<usize, usize>
+     44   1.07%  alloc::alloc::alloc
+     40   0.97%  <core::num::nonzero::NonZero<u16>>::trailing_zeros
+     31   0.75%  <usize as core::slice::index::SliceIndex<[usize]>>::index_mut
+     31   0.75%  vortex_fastlanes::bitpacking::array::bitpack_compress::bit_width_histogram_typed::<u16>
+     28   0.68%  core::ptr::write::<core::ptr::Packed<u8>>
+
+flamegraph written to flamegraph.svg
