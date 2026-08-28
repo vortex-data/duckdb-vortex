@@ -1,0 +1,24 @@
+
+=== 1000 rows: Utf8 vs Utf8View input (arrow in-memory 549528 vs 675024 bytes) ===
+writer                           utf8     utf8view    change   utf8 bytes   view bytes
+vortex_blocking              53.524ms     54.321ms     +1.5%        86440        86440
+vortex_pool                  24.754ms     24.022ms     -3.0%        86440        86440
+vortex_async                 69.009ms     71.568ms     +3.7%        86440        86440
+parquet_zstd1                 2.690ms      2.669ms     -0.8%        23989        23989
+vortex_pool_compact          22.649ms     23.722ms     +4.7%        25240        25240
+
+=== 100000 rows: Utf8 vs Utf8View input (arrow in-memory 53726968 vs 61069392 bytes) ===
+writer                           utf8     utf8view    change   utf8 bytes   view bytes
+vortex_blocking             315.722ms    289.660ms     -8.3%      5058784      5058784
+vortex_pool                 107.436ms     97.457ms     -9.3%      5058784      5058784
+vortex_async                324.768ms    310.839ms     -4.3%      5058784      5058784
+parquet_zstd1               115.680ms    117.791ms     +1.8%       761412       761412
+vortex_pool_compact         117.683ms    107.273ms     -8.8%       417712       416712
+
+=== 1000000 rows: Utf8 vs Utf8View input (arrow in-memory 536406088 vs 610268976 bytes) ===
+writer                           utf8     utf8view    change   utf8 bytes   view bytes
+vortex_blocking                2.641s       2.286s    -13.5%     55959392     55959392
+vortex_pool                 805.136ms    747.274ms     -7.2%     55959392     55959392
+vortex_async                   2.802s       2.377s    -15.2%     55959392     55959392
+parquet_zstd1               856.589ms    904.602ms     +5.6%      4538650      4538650
+vortex_pool_compact            1.037s    858.331ms    -17.2%      3919000      3911872

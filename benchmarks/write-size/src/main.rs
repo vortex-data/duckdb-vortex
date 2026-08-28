@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::{Arc, LazyLock};
 use std::time::{Duration, Instant};
 
-use arrow::array::{ArrayRef, Int64Array, StringArray};
+use arrow::array::{ArrayRef, Int64Array, StringArray, StringViewArray};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 use parquet::arrow::ArrowWriter;
@@ -68,30 +68,63 @@ static LATEST_EDITION_SESSION: LazyLock<VortexSession> = LazyLock::new(|| {
     session
 });
 
+/// Which Arrow string representation the generator emits. Vortex's canonical string array is
+/// VarBinView, and its Arrow export for `DType::Utf8` is `Utf8View`, so `Utf8` input has to be
+/// converted on the way in while `Utf8View` should not.
+#[derive(Copy, Clone, PartialEq, Eq)]
+enum StringKind {
+    Utf8,
+    Utf8View,
+}
+
+impl StringKind {
+    fn data_type(self) -> DataType {
+        match self {
+            StringKind::Utf8 => DataType::Utf8,
+            StringKind::Utf8View => DataType::Utf8View,
+        }
+    }
+
+    fn array(self, values: Vec<String>) -> ArrayRef {
+        match self {
+            StringKind::Utf8 => Arc::new(StringArray::from(values)),
+            StringKind::Utf8View => Arc::new(StringViewArray::from_iter_values(values)),
+        }
+    }
+}
+
 fn create_test_batch(num_rows: usize, batch_size: Option<usize>) -> Vec<RecordBatch> {
+    create_test_batch_of(num_rows, batch_size, StringKind::Utf8View)
+}
+
+fn create_test_batch_of(
+    num_rows: usize,
+    batch_size: Option<usize>,
+    kind: StringKind,
+) -> Vec<RecordBatch> {
     let batch_size = batch_size.unwrap_or(8192);
 
     let schema = Arc::new(Schema::new(vec![
         Field::new("_timestamp", DataType::Int64, false),
-        Field::new("log", DataType::Utf8, false),
-        Field::new("kubernetes_namespace_name", DataType::Utf8, false),
-        Field::new("kubernetes_container_name", DataType::Utf8, false),
-        Field::new("url", DataType::Utf8, false),
-        Field::new("host", DataType::Utf8, false),
-        Field::new("pod_name", DataType::Utf8, false),
-        Field::new("service_name", DataType::Utf8, false),
-        Field::new("level", DataType::Utf8, false),
-        Field::new("thread", DataType::Utf8, false),
-        Field::new("request_id", DataType::Utf8, false),
-        Field::new("user_id", DataType::Utf8, false),
-        Field::new("session_id", DataType::Utf8, false),
-        Field::new("method", DataType::Utf8, false),
-        Field::new("path", DataType::Utf8, false),
+        Field::new("log", kind.data_type(), false),
+        Field::new("kubernetes_namespace_name", kind.data_type(), false),
+        Field::new("kubernetes_container_name", kind.data_type(), false),
+        Field::new("url", kind.data_type(), false),
+        Field::new("host", kind.data_type(), false),
+        Field::new("pod_name", kind.data_type(), false),
+        Field::new("service_name", kind.data_type(), false),
+        Field::new("level", kind.data_type(), false),
+        Field::new("thread", kind.data_type(), false),
+        Field::new("request_id", kind.data_type(), false),
+        Field::new("user_id", kind.data_type(), false),
+        Field::new("session_id", kind.data_type(), false),
+        Field::new("method", kind.data_type(), false),
+        Field::new("path", kind.data_type(), false),
         Field::new("status_code", DataType::Int64, false),
         Field::new("response_time_ms", DataType::Int64, false),
-        Field::new("region", DataType::Utf8, false),
-        Field::new("environment", DataType::Utf8, false),
-        Field::new("version", DataType::Utf8, false),
+        Field::new("region", kind.data_type(), false),
+        Field::new("environment", kind.data_type(), false),
+        Field::new("version", kind.data_type(), false),
     ]));
 
     let num_batches = num_rows.div_ceil(batch_size);
@@ -202,25 +235,25 @@ fn create_test_batch(num_rows: usize, batch_size: Option<usize>) -> Vec<RecordBa
 
         let arrays: Vec<ArrayRef> = vec![
             Arc::new(Int64Array::from(timestamp_data)),
-            Arc::new(StringArray::from(log_data)),
-            Arc::new(StringArray::from(namespace_data)),
-            Arc::new(StringArray::from(container_data)),
-            Arc::new(StringArray::from(url_data)),
-            Arc::new(StringArray::from(host_data)),
-            Arc::new(StringArray::from(pod_name_data)),
-            Arc::new(StringArray::from(service_name_data)),
-            Arc::new(StringArray::from(level_data)),
-            Arc::new(StringArray::from(thread_data)),
-            Arc::new(StringArray::from(request_id_data)),
-            Arc::new(StringArray::from(user_id_data)),
-            Arc::new(StringArray::from(session_id_data)),
-            Arc::new(StringArray::from(method_data)),
-            Arc::new(StringArray::from(path_data)),
+            kind.array(log_data),
+            kind.array(namespace_data),
+            kind.array(container_data),
+            kind.array(url_data),
+            kind.array(host_data),
+            kind.array(pod_name_data),
+            kind.array(service_name_data),
+            kind.array(level_data),
+            kind.array(thread_data),
+            kind.array(request_id_data),
+            kind.array(user_id_data),
+            kind.array(session_id_data),
+            kind.array(method_data),
+            kind.array(path_data),
             Arc::new(Int64Array::from(status_code_data)),
             Arc::new(Int64Array::from(response_time_data)),
-            Arc::new(StringArray::from(region_data)),
-            Arc::new(StringArray::from(environment_data)),
-            Arc::new(StringArray::from(version_data)),
+            kind.array(region_data),
+            kind.array(environment_data),
+            kind.array(version_data),
         ];
 
         batches.push(RecordBatch::try_new(schema.clone(), arrays).unwrap());
@@ -629,7 +662,83 @@ fn profile(dir: &Path, rows: usize, seconds: u64) {
     println!("\nflamegraph written to {}", flamegraph_path.display());
 }
 
+/// Measure the Vortex writers against both Arrow string representations back to back, in one
+/// process, so the comparison is not confounded by run-to-run drift on the host.
+fn viewcmp(dir: &Path, sizes: &[usize]) {
+    for &size in sizes {
+        let utf8 = create_test_batch_of(size, None, StringKind::Utf8);
+        let view = create_test_batch_of(size, None, StringKind::Utf8View);
+        let utf8_bytes: usize = utf8.iter().map(|b| b.get_array_memory_size()).sum();
+        let view_bytes: usize = view.iter().map(|b| b.get_array_memory_size()).sum();
+
+        println!(
+            "\n=== {size} rows: Utf8 vs Utf8View input (arrow in-memory {utf8_bytes} vs {view_bytes} bytes) ==="
+        );
+        println!(
+            "{:<24} {:>12} {:>12} {:>9} {:>12} {:>12}",
+            "writer", "utf8", "utf8view", "change", "utf8 bytes", "view bytes"
+        );
+
+        type Writer = (&'static str, fn(&[RecordBatch], &Path));
+        let writers: &[Writer] = &[
+            ("vortex_blocking", write_vortex_blocking),
+            ("vortex_pool", write_vortex_pool),
+            ("vortex_async", write_vortex_async),
+            ("parquet_zstd1", |b, p| {
+                write_parquet(b, p, Compression::ZSTD(ZstdLevel::try_new(1).unwrap()))
+            }),
+        ];
+
+        for (name, f) in writers {
+            let a = measure(name, dir, "out", &utf8, f);
+            let b = measure(name, dir, "out", &view, f);
+            let change = 100.0 * (b.median.as_secs_f64() / a.median.as_secs_f64() - 1.0);
+            println!(
+                "{:<24} {:>12} {:>12} {:>+8.1}% {:>12} {:>12}",
+                name,
+                format!("{:.3?}", a.median),
+                format!("{:.3?}", b.median),
+                change,
+                a.bytes,
+                b.bytes
+            );
+        }
+
+        // Compact too, since it is the configuration worth shipping.
+        let a = measure("compact", dir, "out", &utf8, |b, p| {
+            write_vortex_pool_with(b, p, Some(compact_strategy()))
+        });
+        let b = measure("compact", dir, "out", &view, |b, p| {
+            write_vortex_pool_with(b, p, Some(compact_strategy()))
+        });
+        let change = 100.0 * (b.median.as_secs_f64() / a.median.as_secs_f64() - 1.0);
+        println!(
+            "{:<24} {:>12} {:>12} {:>+8.1}% {:>12} {:>12}",
+            "vortex_pool_compact",
+            format!("{:.3?}", a.median),
+            format!("{:.3?}", b.median),
+            change,
+            a.bytes,
+            b.bytes
+        );
+    }
+}
+
 fn main() {
+    if std::env::args().nth(1).as_deref() == Some("viewcmp") {
+        let dir = TempDir::new().unwrap();
+        let sizes: Vec<usize> = std::env::args()
+            .skip(2)
+            .map(|a| a.parse().unwrap())
+            .collect();
+        let sizes = if sizes.is_empty() {
+            vec![1_000, 100_000, 1_000_000]
+        } else {
+            sizes
+        };
+        viewcmp(dir.path(), &sizes);
+        return;
+    }
     if std::env::args().nth(1).as_deref() == Some("profile") {
         #[cfg(target_os = "linux")]
         {

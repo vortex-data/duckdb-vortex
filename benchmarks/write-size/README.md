@@ -14,8 +14,12 @@ cargo run --release -- 10 1000 10000 100000 1000000   # size/throughput matrix
 cargo run --release -- probe                          # where the small-write fixed cost goes
 ```
 
-The data generator is copied verbatim from the issue: 20 columns (3 `Int64`, 17 `Utf8`) of
-synthetic Kubernetes log records, chunked into 8192-row `RecordBatch`es.
+The data generator follows the issue: 20 columns (3 `Int64`, 17 string) of synthetic Kubernetes
+log records, chunked into 8192-row `RecordBatch`es. The issue used `Utf8`; this benchmark emits
+`Utf8View` instead, which is the representation Vortex actually wants — see
+[Utf8 vs Utf8View input](#utf8-vs-utf8view-input) for the measured difference and
+`cargo run --release -- viewcmp` to reproduce it. `results/profile-1k.txt` predates that switch
+and is the only `Utf8` artefact still in the tree.
 
 Writers measured:
 
@@ -396,3 +400,50 @@ Two other things worth noting from the profile:
 
 The cheapest available win for small writes is therefore a size threshold below which FSST
 training is skipped in favour of a fixed encoding, rather than anything in the layout or IO path.
+
+## Utf8 vs Utf8View input
+
+Vortex's canonical string array is VarBinView, and `vortex-arrow` maps `DType::Utf8` back out to
+`DataType::Utf8View`. Arrow `Utf8` input therefore has to be converted on the way in; `Utf8View`
+should pass through. The earlier profile put that conversion at 19.7% of the write, so the
+generator now emits `StringViewArray`.
+
+Measured back to back in one process (`cargo run --release -- viewcmp`), because comparing across
+separate runs on this host drifts by more than the effect being measured:
+
+| rows | writer | Utf8 | Utf8View | change |
+| ---: | --- | ---: | ---: | ---: |
+| 1,000 | `vortex_blocking` | 53.5 ms | 54.3 ms | +1.5% |
+| 1,000 | `vortex_pool` | 24.8 ms | 24.0 ms | -3.0% |
+| 100,000 | `vortex_blocking` | 316 ms | 290 ms | -8.3% |
+| 100,000 | `vortex_pool` | 107 ms | 97 ms | -9.3% |
+| 100,000 | `vortex_pool_compact` | 118 ms | 107 ms | -8.8% |
+| 1,000,000 | `vortex_blocking` | 2.641 s | 2.286 s | **-13.5%** |
+| 1,000,000 | `vortex_async` | 2.802 s | 2.377 s | **-15.2%** |
+| 1,000,000 | `vortex_pool` | 805 ms | 747 ms | -7.2% |
+| 1,000,000 | `vortex_pool_compact` | 1.037 s | 858 ms | **-17.2%** |
+| 1,000,000 | `parquet_zstd1` | 857 ms | 905 ms | +5.6% |
+
+Output bytes are unchanged — 55,959,392 either way for the default compressor, and identical for
+Parquet. Compact differs by 0.2% at 1M rows (3,919,000 vs 3,911,872), which is sampling noise in
+scheme selection rather than a real encoding difference.
+
+The gain grows with data volume and is nil at 1,000 rows, which fits: conversion is proportional
+to bytes, while the small-write cost is the fixed per-column FSST training that no input format
+change can touch. Parquet moves the other way, paying ~6% to materialise views back into byte
+arrays.
+
+Re-profiling at 100k rows confirms the mechanism — VarBinView construction falls from 19.7% to
+4.4% of samples:
+
+| area | Utf8 | Utf8View |
+| --- | ---: | ---: |
+| FSST | 33.1% | 37.7% |
+| VarBinView construction | 19.7% | **4.4%** |
+| zone map stats / aggregates | 11.9% | 13.5% |
+| hashing | 9.6% | 14.7% |
+| dict build/probe | 4.9% | 8.9% |
+
+The remaining areas grow as a share because the total shrank, not because they got slower. The
+top frame is now `fsst::Compressor::compress_into` at 12.4%, where before it was
+`MaybeUninit<BinaryView>::write` at 13.0% — actual compression rather than format conversion.
