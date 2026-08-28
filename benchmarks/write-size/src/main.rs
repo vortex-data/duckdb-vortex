@@ -565,32 +565,80 @@ fn profile(dir: &Path, rows: usize, seconds: u64) {
     let report = guard.report().build().unwrap();
     println!("\n=== profile: {rows} rows, vortex_blocking, {iters} iterations ===");
 
-    // Attribution walks from the leaf outward and takes the FIRST frame that matches a bucket.
-    // Matching anywhere in the stack would credit everything to whichever scheme sits highest,
-    // which is wrong for a cascading compressor: FSST's integer codes are then bitpacked, so
-    // the bitpacking frames have FSST ancestors.
+    // Attribution walks leaf-outward to the first frame belonging to a crate we are attributing
+    // work to, and buckets on that frame's *defining path* with generic parameters stripped.
+    //
+    // Both halves matter. Matching raw symbols credits a frame by its type parameters, so the
+    // min/max scan's `Iter<BinaryView>` reads as VarBinView work; stripping generics fixes that.
+    // Skipping non-domain frames pushes std/arrow-buffer plumbing (memcpy, BitIterator, hashbrown
+    // probes) onto the vortex function that invoked it, which is what "where does the time go"
+    // actually means.
+    fn base_path(sym: &str) -> String {
+        let s = sym.trim();
+        if let Some(rest) = s.strip_prefix('<') {
+            // `<Type as Trait>::method` — attribute to Type, not to the trait.
+            let mut depth = 1usize;
+            let mut end = rest.len();
+            for (i, c) in rest.char_indices() {
+                match c {
+                    '<' => depth += 1,
+                    '>' => {
+                        depth -= 1;
+                        if depth == 0 {
+                            end = i;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+            let inner = &rest[..end];
+            return base_path(inner.split(" as ").next().unwrap_or(inner));
+        }
+        let mut out = String::with_capacity(s.len());
+        let mut depth = 0usize;
+        for c in s.chars() {
+            match c {
+                '<' => depth += 1,
+                '>' => depth = depth.saturating_sub(1),
+                _ if depth == 0 => out.push(c),
+                _ => {}
+            }
+        }
+        out
+    }
+
+    // arrow_buffer is deliberately absent: its BitIterator is plumbing for whoever iterates a
+    // validity mask, not conversion work of its own.
+    fn is_domain(base: &str) -> bool {
+        ["vortex", "fsst", "pco", "zstd"]
+            .iter()
+            .any(|d| base.starts_with(d))
+    }
+
     let buckets: &[(&str, &[&str])] = &[
-        ("fsst (string fragmentation)", &["fsst"]),
-        ("onpair (string fragmentation)", &["onpair"]),
+        ("fsst", &["fsst"]),
+        ("onpair", &["onpair"]),
         ("zstd", &["zstd"]),
         ("pco", &["pco"]),
-        ("dict build/probe", &["dict"]),
-        ("bitpacking / FoR / zigzag", &["fastlanes", "bitpack", "zigzag"]),
-        ("runend / RLE / sequence", &["runend", "sequence"]),
+        ("dict builder (builds VarBinView)", &["builders::dict"]),
+        ("dict encoding array", &["arrays::dict"]),
+        ("zone map stats / min-max", &["aggregate_fn", "min_max", "stats::"]),
+        ("compressor stats (scheme scoring)", &["vortex_compressor"]),
+        ("bitpacking / FoR / zigzag", &["fastlanes", "zigzag"]),
+        ("runend / sequence", &["runend", "sequence"]),
         ("alp", &["alp"]),
-        ("compressor stats (scheme scoring)", &["vortex_compressor::stats"]),
-        ("zone map stats / aggregates", &["aggregate_fn", "min_max", "zone"]),
-        ("varbinview construction", &["varbinview", "binaryview"]),
+        ("varbinview array ops", &["varbinview"]),
+        ("canonicalize", &["canonical"]),
         ("scheme search / cascade", &["btrblocks", "cascad", "scheme", "sample"]),
-        ("arrow conversion", &["arrow"]),
+        ("arrow conversion", &["vortex_arrow"]),
         ("layout / segments / footer", &["layout", "segment", "footer", "flatbuffer"]),
-        ("hashing", &["hashbrown", "hash"]),
-        ("alloc / memcpy", &["alloc", "malloc", "memcpy", "__rust_"]),
+        ("buffer / builders", &["buffer", "builders"]),
     ];
 
     let mut by_bucket: HashMap<&str, usize> = HashMap::new();
-    let mut by_leaf: HashMap<String, usize> = HashMap::new();
-    let mut by_crate: HashMap<String, usize> = HashMap::new();
+    let mut by_fn: HashMap<String, usize> = HashMap::new();
+    let mut by_leaf_crate: HashMap<String, usize> = HashMap::new();
     let mut total = 0usize;
 
     for (frames, count) in report.data.iter() {
@@ -606,53 +654,52 @@ fn profile(dir: &Path, rows: usize, seconds: u64) {
             .collect();
 
         if let Some(leaf) = names.first() {
-            *by_leaf.entry(leaf.clone()).or_default() += count;
-            let krate = leaf
-                .trim_start_matches('<')
+            let krate = base_path(leaf)
                 .split("::")
                 .next()
                 .unwrap_or("?")
-                .split(&[' ', '<'][..])
-                .next()
-                .unwrap_or("?")
                 .to_string();
-            *by_crate.entry(krate).or_default() += count;
+            *by_leaf_crate.entry(krate).or_default() += count;
         }
 
-        let bucket = names
-            .iter()
-            .find_map(|name| {
-                let lower = name.to_lowercase();
-                buckets
+        let attributed = names.iter().map(|n| base_path(n)).find(|b| is_domain(b));
+
+        match attributed {
+            Some(base) => {
+                *by_fn.entry(base.clone()).or_default() += count;
+                let lower = base.to_lowercase();
+                let bucket = buckets
                     .iter()
-                    .find(|(_, needles)| needles.iter().any(|needle| lower.contains(needle)))
+                    .find(|(_, needles)| needles.iter().any(|n| lower.contains(n)))
                     .map(|(label, _)| *label)
-            })
-            .unwrap_or("other");
-        *by_bucket.entry(bucket).or_default() += count;
+                    .unwrap_or("other vortex");
+                *by_bucket.entry(bucket).or_default() += count;
+            }
+            None => *by_bucket.entry("runtime / std only").or_default() += count,
+        }
     }
 
     let pct = |c: usize| 100.0 * c as f64 / total as f64;
 
-    println!("\n-- samples by nearest-frame area ({total} samples total) --");
+    println!("\n-- samples by area ({total} samples total) --");
     let mut rows_out: Vec<_> = by_bucket.into_iter().collect();
     rows_out.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
     for (name, count) in rows_out {
-        println!("{:<38} {:>7} {:>7.1}%", name, count, pct(count));
+        println!("{:<40} {:>7} {:>7.1}%", name, count, pct(count));
     }
 
-    println!("\n-- self time by crate --");
-    let mut crates: Vec<_> = by_crate.into_iter().collect();
+    println!("\n-- leaf frame's own crate (who burns the cycles) --");
+    let mut crates: Vec<_> = by_leaf_crate.into_iter().collect();
     crates.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
-    for (name, count) in crates.into_iter().take(15) {
-        println!("{:<38} {:>7} {:>7.1}%", name, count, pct(count));
+    for (name, count) in crates.into_iter().take(12) {
+        println!("{:<40} {:>7} {:>7.1}%", name, count, pct(count));
     }
 
-    println!("\n-- top 25 leaf functions (self time) --");
-    let mut leaves: Vec<_> = by_leaf.into_iter().collect();
-    leaves.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
-    for (name, count) in leaves.into_iter().take(25) {
-        let short: String = name.chars().take(110).collect();
+    println!("\n-- top 20 attributed functions --");
+    let mut fns: Vec<_> = by_fn.into_iter().collect();
+    fns.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
+    for (name, count) in fns.into_iter().take(20) {
+        let short: String = name.chars().take(100).collect();
         println!("{:>7} {:>6.2}%  {}", count, pct(count), short);
     }
 
