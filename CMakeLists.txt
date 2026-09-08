@@ -111,6 +111,19 @@ target_link_libraries(${LOADABLE_EXTENSION_NAME}
     ${CORE_FOUNDATION_FRAMEWORK}
 )
 
+# Release builds of the loadable extension ship without the static symbol table and debug
+# sections: DuckDB resolves the entry points through the dynamic symbol table, which stripping
+# keeps, and the rest is roughly a fifth of the distributed binary. Turn the option off to keep
+# function names in crash backtraces while debugging a release build.
+option(VORTEX_STRIP_EXTENSION "Strip symbols from release builds of the loadable extension" ON)
+if(VORTEX_STRIP_EXTENSION AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    if(APPLE)
+        target_link_options(${LOADABLE_EXTENSION_NAME} PRIVATE "LINKER:-x")
+    elseif(NOT WIN32)
+        target_link_options(${LOADABLE_EXTENSION_NAME} PRIVATE "LINKER:--strip-all")
+    endif()
+endif()
+
 install(
     TARGETS ${EXTENSION_NAME}
     EXPORT "${DUCKDB_EXPORT_SET}"
