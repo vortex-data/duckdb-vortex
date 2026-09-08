@@ -81,10 +81,22 @@ corrosion_import_crate(
 # Forward the DuckDB version passed via CMake as an env var.
 message("Forwarding DUCKDB_VERSION=${DUCKDB_VERSION} to Cargo")
 message("Forwarding DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR} to Cargo")
+# On musl (Alpine) the rustup toolchain links statically by default, which
+# breaks the bindgen-running build scripts (they cannot dlopen libclang) and
+# yields a non-PIC staticlib. Corrosion always passes `--target`, under which
+# cargo never forwards RUSTFLAGS to host build scripts, so the fix is a rustc
+# wrapper instead of RUSTFLAGS. See scripts/musl-rustc-wrapper.sh.
+if(Rust_CARGO_TARGET_ENV STREQUAL "musl")
+    message("Using musl rustc wrapper for Rust target ${Rust_CARGO_TARGET_CACHED}")
+    set(VORTEX_RUSTC_WRAPPER_ENV
+        "RUSTC_WRAPPER=${CMAKE_CURRENT_SOURCE_DIR}/scripts/musl-rustc-wrapper.sh")
+endif()
+
 corrosion_set_env_vars(
     ${VORTEX_RUST_TARGET_NAME}
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
     "DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR}"
+    ${VORTEX_RUSTC_WRAPPER_ENV}
 )
 
 include_directories(src/include)
