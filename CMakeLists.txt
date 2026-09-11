@@ -78,13 +78,43 @@ corrosion_import_crate(
     ${VORTEX_CARGO_PROFILE}
 )
 
-# Forward the DuckDB version passed via CMake as an env var.
-message("Forwarding DUCKDB_VERSION=${DUCKDB_VERSION} to Cargo")
-message("Forwarding DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR} to Cargo")
+if(NOT DEFINED VORTEX_VERSION)
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/vortex-extension/Cargo.toml" VORTEX_TOML)
+    string(REGEX MATCH "vortex-duckdb = {[^\n]*rev = \"([0-9a-f]+)\"" VORTEX_REV
+           "${VORTEX_TOML}")
+    if(NOT VORTEX_REV)
+        message(FATAL_ERROR "no vortex-duckdb in vortex-extension/Cargo.toml")
+    endif()
+    set(VORTEX_GIT_REV "${CMAKE_MATCH_1}")
+    execute_process(
+        COMMAND git ls-remote --tags "https://github.com/vortex-data/vortex.git"
+        OUTPUT_VARIABLE VORTEX_REMOTE_TAGS
+        RESULT_VARIABLE VORTEX_LS
+        ERROR_QUIET
+        TIMEOUT 30
+    )
+    if(NOT (VORTEX_LS EQUAL 0))
+        message(FATAL_ERROR "failed getting tags for vortex-duckdb")
+    endif()
+    string(REGEX MATCH "${VORTEX_GIT_REV}\trefs/tags/([^\n^]+)"
+        VORTEX_TAG "${VORTEX_REMOTE_TAGS}")
+    if(NOT VORTEX_TAG)
+        message(FATAL_ERROR "No tag associated with Vortex checkout")
+    endif()
+    set(VORTEX_VERSION "${CMAKE_MATCH_1}")
+endif()
+if(VORTEX_VERSION STREQUAL "")
+    message(FATAL_ERROR "Empty Vortex version")
+endif()
+
+message("VORTEX_VERSION=${VORTEX_VERSION}")
+message("DUCKDB_VERSION=${DUCKDB_VERSION}")
+message("DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR}")
 corrosion_set_env_vars(
     ${VORTEX_RUST_TARGET_NAME}
     "DUCKDB_VERSION=${DUCKDB_VERSION}"
     "DUCKDB_SOURCE_DIR=${DUCKDB_MODULE_BASE_DIR}"
+    "VORTEX_VERSION=${VORTEX_VERSION}"
 )
 
 include_directories(src/include)

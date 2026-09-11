@@ -1,0 +1,10 @@
+# name: test/sql/version.test
+# description: vortex_version() works
+# group: [vortex]
+
+require vortex
+
+query T
+SELECT vortex_version()
+----
+0.86.0
