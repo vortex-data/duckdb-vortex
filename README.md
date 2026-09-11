@@ -48,4 +48,11 @@ The Vortex version is defined in `vortex-extension/Cargo.toml`. It can be a git 
 vortex-duckdb = { path = "<path/to/vortex/vortex-duckdb>"}
 ```
 
-See the Cargo docs for [git](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories) or [path](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies) dependencies for full details.
+See the Cargo docs for
+[git](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-dependencies-from-git-repositories)
+or
+[path](https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#specifying-path-dependencies)
+dependencies for full details.
+
+If you're overriding `vortex-duckdb` to a local path, set
+`EXT_FLAGS=-DVORTEX_VERSION=0` as well as we require a version for every build.
