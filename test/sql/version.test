@@ -7,4 +7,4 @@ require vortex
 query T
 SELECT vortex_version()
 ----
-0.86.0
+0.86.1

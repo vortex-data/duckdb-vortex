@@ -10,7 +10,7 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "f9093dffd2cd0212d90a65198815ecd2ea385762" }
+vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "d1fe2dc46d2b947a2304122d0d0423332fcb77a3" }
 
 # Geospatial patch as we have multiple dependency versions in our tree
 [patch.crates-io]
