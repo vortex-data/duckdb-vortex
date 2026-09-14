@@ -6,6 +6,11 @@ cmake_policy(SET CMP0135 NEW)
 set(TARGET_NAME vortex)
 project(${TARGET_NAME}_project)
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 12.0)
+if(UNIX AND NOT APPLE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ftls-model=global-dynamic")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

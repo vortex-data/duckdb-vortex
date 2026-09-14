@@ -17,7 +17,7 @@ jobs:
     uses: duckdb/extension-ci-tools/.github/workflows/_extension_distribution.yml@v1.5.5
     with:
       ci_tools_version: v1.5.5
-      duckdb_version: v1.5.5
+      duckdb_version: fc4002c6e36f1e2d17d7c5b1a604777d69238d2b
       extension_name: vortex
       exclude_archs: "wasm_mvp;wasm_eh;wasm_threads;windows_amd64_rtools;windows_amd64_mingw;windows_amd64;linux_amd64_musl"
       extra_toolchains: "rust"
