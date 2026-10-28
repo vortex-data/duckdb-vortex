@@ -12,7 +12,7 @@ on:
     types: [ closed ]
 
 env:
-  RELEASE_BRANCH: v1.5-variegata
+  RELEASE_BRANCH: v2.0-cyanoptera
 
 jobs:
   cherry-pick:
