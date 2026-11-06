@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # DUCKDB_VERSION is passed down as an env var to Vortex which
-# in turn builds against the respective version. It is mandatory 
+# in turn builds against the respective version. It is mandatory
 # that the version is set to prevent implicit ABI breaks.
 if(NOT DEFINED DUCKDB_VERSION OR "${DUCKDB_VERSION}" STREQUAL "")
     message(FATAL_ERROR "DUCKDB_VERSION must be set by DuckDB's CMake build")
@@ -139,7 +139,11 @@ target_link_libraries(${LOADABLE_EXTENSION_NAME}
     ${CORE_FOUNDATION_FRAMEWORK}
 )
 
-if(NOT WIN32)
+if (WIN32)
+    # DuckDB extensions need static Windows runtime libs
+    corrosion_add_target_rustflags(${VORTEX_RUST_TARGET_NAME}
+        "-Ctarget-feature=+crt-static")
+else()
     set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wno-unused-parameter)
     target_compile_options(${EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
     target_compile_options(${LOADABLE_EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
