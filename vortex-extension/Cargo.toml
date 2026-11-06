@@ -1,6 +1,6 @@
 [package]
 name = "vortex-extension"
-description = "C-compatible Vortex DuckDB extension artifacts"
+description = "Vortex DuckDB extension"
 edition = "2024"
 publish = false
 
@@ -10,8 +10,8 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-cc = "=1.8.0"
-vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "7d49b0da06167b1208250e5f6cfb0a1232f4e86f" }
+cc = "=1.8.0" # 1.9+ broken on Windows
+vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "345b6d9c0aaa17c55cc38d831f6e76dc566cd1af" }
 
 # Geospatial patch as we have multiple dependency versions in our tree
 [patch.crates-io]
@@ -20,7 +20,6 @@ geoarrow-array = { version = "=0.8.0", git = "https://github.com/geoarrow/geoarr
 geoarrow-cast = { version = "=0.8.0", git = "https://github.com/geoarrow/geoarrow-rs", rev = "855d2e138e54ce503c4488d5bb795ca1ea880d1f" }
 geoarrow-schema = { version = "=0.8.0", git = "https://github.com/geoarrow/geoarrow-rs", rev = "855d2e138e54ce503c4488d5bb795ca1ea880d1f" }
 
-# This improved build times significantly
 [profile.dev.package.vortex-fastlanes]
 debug = false
 
