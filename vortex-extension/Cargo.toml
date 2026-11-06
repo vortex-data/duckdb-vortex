@@ -10,7 +10,7 @@ path = "src/lib.rs"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-cc = "=1.8.0" # 1.9+ broken on Windows
+cc = "=1.11.1" # 1.9+ broken on Windows
 vortex-duckdb = { git = "https://github.com/vortex-data/vortex.git", rev = "345b6d9c0aaa17c55cc38d831f6e76dc566cd1af" }
 
 # Geospatial patch as we have multiple dependency versions in our tree
