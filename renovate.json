@@ -29,6 +29,13 @@
         "https://github.com/vortex-data/vortex.git"
       ],
       "enabled": false
+    },
+    {
+      "description": "Cargo dependency updates require manual review and merge",
+      "matchManagers": [
+        "cargo"
+      ],
+      "automerge": false
     }
   ]
 }
