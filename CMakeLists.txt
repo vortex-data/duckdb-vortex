@@ -11,7 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # DUCKDB_VERSION is passed down as an env var to Vortex which
-# in turn builds against the respective version. It is mandatory 
+# in turn builds against the respective version. It is mandatory
 # that the version is set to prevent implicit ABI breaks.
 if(NOT DEFINED DUCKDB_VERSION OR "${DUCKDB_VERSION}" STREQUAL "")
     message(FATAL_ERROR "DUCKDB_VERSION must be set by DuckDB's CMake build")
@@ -127,26 +127,28 @@ set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
 build_static_extension(${TARGET_NAME} src/vortex_extension.cpp)
 build_loadable_extension(${TARGET_NAME} "" src/vortex_extension.cpp)
 
-set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wno-unused-parameter)
-
-target_compile_options(${EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
 target_link_libraries(${EXTENSION_NAME}
     ${VORTEX_LIB_NAME}
     ${SECURITY_FRAMEWORK}
     ${CORE_FOUNDATION_FRAMEWORK}
 )
 
-target_compile_options(${LOADABLE_EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
 target_link_libraries(${LOADABLE_EXTENSION_NAME}
     ${VORTEX_LIB_NAME}
     ${SECURITY_FRAMEWORK}
     ${CORE_FOUNDATION_FRAMEWORK}
 )
 
-# Release builds of the loadable extension ship without the static symbol table and debug
-# sections: DuckDB resolves the entry points through the dynamic symbol table, which stripping
-# keeps, and the rest is roughly a fifth of the distributed binary. Turn the option off to keep
-# function names in crash backtraces while debugging a release build.
+if (WIN32)
+    # DuckDB extensions need static Windows runtime libs
+    corrosion_add_target_rustflags(${VORTEX_RUST_TARGET_NAME}
+        "-Ctarget-feature=+crt-static")
+else()
+    set(VORTEX_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wno-unused-parameter)
+    target_compile_options(${EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
+    target_compile_options(${LOADABLE_EXTENSION_NAME} PRIVATE ${VORTEX_WARNING_FLAGS})
+endif()
+
 option(VORTEX_STRIP_EXTENSION "Strip symbols from release builds of the loadable extension" ON)
 if(VORTEX_STRIP_EXTENSION AND CMAKE_BUILD_TYPE STREQUAL "Release")
     if(APPLE)
